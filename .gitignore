@@ -1,0 +1,17 @@
+# Credenciales y sesión de Telegram (NUNCA subir al repositorio)
+config.json
+*.session
+*.session-journal
+
+# Estado local del programa
+subidos.json
+*.tmp
+thumb_*.jpg
+
+# Entornos y cachés de Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
