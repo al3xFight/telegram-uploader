@@ -659,6 +659,7 @@ class OpcionesSubida:
     pausa_min: float = 3.0
     pausa_max: float = 6.0
     chunks_paralelos: int = 8
+    archivos_simultaneos: int = 1
 
 
 @dataclass
@@ -795,61 +796,64 @@ def construir_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def main():
-    config = cargar_config()
-
-    # Determinar idioma: --lang (temporal) > guardado en config > preguntar
+def configurar_idioma(config: dict, argv: list) -> None:
+    """Fija el idioma activo. Prioridad: --lang (temporal) > config guardada > preguntar."""
     lang_cli = None
-    if "--lang" in sys.argv:
-        idx = sys.argv.index("--lang")
-        if idx + 1 < len(sys.argv):
-            lang_cli = sys.argv[idx + 1]
+    if "--lang" in argv:
+        idx = argv.index("--lang")
+        if idx + 1 < len(argv):
+            lang_cli = argv[idx + 1]
 
     if lang_cli in ("es", "en"):
         traductor.idioma = lang_cli
     elif config.get("idioma") in ("es", "en"):
         traductor.idioma = config["idioma"]
-    elif "-h" in sys.argv or "--help" in sys.argv:
+    elif "-h" in argv or "--help" in argv:
         traductor.idioma = "es"  # --help no debe quedar esperando input
     else:
         traductor.idioma = elegir_idioma_interactivo()
         if not CONFIG_PATH.exists():
             config["idioma"] = traductor.idioma  # se confirma al guardar el resto en el wizard
 
+
+def mostrar_banner() -> None:
     console.print(Panel.fit(
         f"[bold]📡 Telegram Uploader[/bold] [dim]v{VERSION}[/dim]\n{t('banner_subtitle')}",
         border_style="blue",
     ))
 
-    parser = construir_parser()
-    args = parser.parse_args()
 
-    if args.debug:
-        log.setLevel(logging.DEBUG)
+def ejecutar_modo_config(config: dict) -> None:
+    """Modo --config: asistente si falta configuración, menú de edición si ya existe."""
+    if config_incompleta(config):
+        console.print(f"[yellow]{t('no_config_yet')}[/yellow]\n")
+        asistente_configuracion(config, primera_vez=True)
+    else:
+        menu_configuracion(config)
 
-    if args.config:
-        if config_incompleta(config):
-            console.print(f"[yellow]{t('no_config_yet')}[/yellow]\n")
-            asistente_configuracion(config, primera_vez=True)
-        else:
-            menu_configuracion(config)
-        return
 
+def asegurar_configuracion(config: dict) -> dict:
+    """Devuelve una configuración completa, lanzando el asistente si hace falta."""
     if config_incompleta(config):
         console.print(Panel(t("welcome_body"), title=t("welcome_title"), border_style="green"))
-        config = asistente_configuracion(config, primera_vez=True)
-    elif not config.get("idioma"):
+        return asistente_configuracion(config, primera_vez=True)
+    if not config.get("idioma"):
         config["idioma"] = traductor.idioma
         guardar_config(config)
+    return config
 
+
+def resolver_ajustes(args, config: dict):
+    """Combina configuración guardada y argumentos; valida y termina si algo es inválido.
+
+    Devuelve (api_id, api_hash, canal, opciones).
+    """
     try:
         api_id = int(config["api_id"])
     except (TypeError, ValueError):
         console.print(f"[red]{t('err_api_id_invalid_saved')}[/red]")
         sys.exit(1)
 
-    api_hash = str(config["api_hash"])
-    canal = config["canal"]
     chunks_paralelos = args.chunks_paralelos if args.chunks_paralelos is not None else int(config["chunks_paralelos"])
     pausa_min = args.pausa_min if args.pausa_min is not None else float(config["pausa_min"])
     pausa_max = args.pausa_max if args.pausa_max is not None else float(config["pausa_max"])
@@ -863,6 +867,16 @@ async def main():
     if pausa_max > 0 and pausa_min > pausa_max:
         pausa_min, pausa_max = pausa_max, pausa_min
 
+    opciones = OpcionesSubida(
+        borrar_local=args.borrar_local, dry_run=args.dry_run,
+        pausa_min=pausa_min, pausa_max=pausa_max, chunks_paralelos=chunks_paralelos,
+        archivos_simultaneos=args.paralelo,
+    )
+    return api_id, str(config["api_hash"]), config["canal"], opciones
+
+
+def mostrar_avisos(args) -> None:
+    """Avisos no bloqueantes sobre el entorno y las opciones elegidas."""
     if args.paralelo > 1:
         log.warning(t("warn_paralelo_order", n=args.paralelo))
 
@@ -874,7 +888,10 @@ async def main():
     if not _FFMPEG_DISPONIBLE:
         log.warning(t("warn_ffmpeg_missing"))
 
-    ruta_carpeta = args.carpeta
+
+def obtener_carpeta(ruta_indicada) -> Path:
+    """Pide la carpeta por consola si no se indicó, y comprueba que exista."""
+    ruta_carpeta = ruta_indicada
     while not ruta_carpeta:
         ruta_carpeta = input(f"{t('prompt_carpeta')}: ").strip().strip('"').strip("'")
 
@@ -882,20 +899,19 @@ async def main():
     if not carpeta.is_dir():
         console.print(f"[red]{t('err_carpeta_not_found', carpeta=carpeta)}[/red]")
         sys.exit(1)
+    return carpeta
 
-    registro = cargar_registro()
-    archivos = list(encontrar_archivos(carpeta, solo_videos=not args.todo))
+
+def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
+    """Devuelve (todos_los_archivos, pendientes), ambos en orden cronológico."""
+    archivos = list(encontrar_archivos(carpeta, solo_videos=solo_videos))
     archivos.sort(key=obtener_timestamp_orden)
     pendientes = [a for a in archivos if clave_archivo(a) not in registro]
+    return archivos, pendientes
 
-    log.info(t("log_found_files", n=len(archivos)))
-    log.info(t("log_pending_files", n=len(pendientes)))
 
-    if not pendientes:
-        log.info(t("log_nothing_new"))
-        return
-
-    client = TelegramClient(
+def crear_cliente(api_id: int, api_hash: str):
+    return TelegramClient(
         SESSION_NAME, api_id, api_hash,
         connection_retries=5,
         retry_delay=1,
@@ -904,60 +920,95 @@ async def main():
         flood_sleep_threshold=60,
     )
 
+
+async def resolver_destino(client, canal):
+    """Busca el canal de destino; si no existe, informa y termina."""
+    try:
+        return await client.get_entity(resolver_canal(canal))
+    except (ValueError, RPCError) as e:
+        console.print(f"[red]{t('err_channel_not_found', canal=canal, error=e)}[/red]")
+        console.print(t("hint_check_channel"))
+        console.print(t("hint_fix_config"))
+        sys.exit(1)
+
+
+def crear_barra_progreso() -> Progress:
+    return Progress(
+        TextColumn("[bold blue]{task.description}"),
+        BarColumn(bar_width=None),
+        TaskProgressColumn(),
+        DownloadColumn(),
+        TransferSpeedColumn(),
+        TextColumn("[dim]Elapsed:[/dim]"),
+        TimeElapsedColumn(),
+        TextColumn("[dim]ETA:[/dim]"),
+        TimeRemainingColumn(),
+        transient=False,
+        refresh_per_second=10,
+    )
+
+
+async def ejecutar_subidas(client, destino, pendientes: list, registro: dict,
+                           opciones: OpcionesSubida) -> int:
+    """Sube todos los pendientes y registra los exitosos. Devuelve cuántos se subieron."""
+    semaforo = asyncio.Semaphore(max(1, opciones.archivos_simultaneos))
+    lock_registro = asyncio.Lock()
+    subidos_ok = 0
+    progress = crear_barra_progreso()
+
+    with progress:
+        task_global_id = progress.add_task(t("progress_total_label"), total=len(pendientes))
+        ctx = ContextoSubida(client, destino, semaforo, progress, task_global_id)
+
+        async def procesar(ruta):
+            nonlocal subidos_ok
+            # La clave se calcula ANTES de subir: con --borrar-local el
+            # archivo ya no existirá después y ruta.stat() fallaría.
+            clave = clave_archivo(ruta)
+            exito = await subir_archivo(ctx, opciones, ruta)
+            if exito and not opciones.dry_run:
+                async with lock_registro:
+                    registro[clave] = {"nombre": ruta.name, "ruta_original": str(ruta)}
+                    guardar_registro(registro)
+                    subidos_ok += 1
+
+        await asyncio.gather(*(procesar(ruta) for ruta in pendientes))
+
+    return subidos_ok
+
+
+async def main():
+    config = cargar_config()
+    configurar_idioma(config, sys.argv)
+    mostrar_banner()
+
+    args = construir_parser().parse_args()
+    if args.debug:
+        log.setLevel(logging.DEBUG)
+
+    if args.config:
+        ejecutar_modo_config(config)
+        return
+
+    config = asegurar_configuracion(config)
+    api_id, api_hash, canal, opciones = resolver_ajustes(args, config)
+    mostrar_avisos(args)
+    carpeta = obtener_carpeta(args.carpeta)
+
+    registro = cargar_registro()
+    archivos, pendientes = buscar_pendientes(carpeta, solo_videos=not args.todo, registro=registro)
+    log.info(t("log_found_files", n=len(archivos)))
+    log.info(t("log_pending_files", n=len(pendientes)))
+    if not pendientes:
+        log.info(t("log_nothing_new"))
+        return
+
+    client = crear_cliente(api_id, api_hash)
     try:
         await client.start()
-
-        try:
-            destino = await client.get_entity(resolver_canal(canal))
-        except (ValueError, RPCError) as e:
-            console.print(f"[red]{t('err_channel_not_found', canal=canal, error=e)}[/red]")
-            console.print(t("hint_check_channel"))
-            console.print(t("hint_fix_config"))
-            sys.exit(1)
-
-        semaforo = asyncio.Semaphore(max(1, args.paralelo))
-        subidos_ok = 0
-        lock_registro = asyncio.Lock()
-
-        progress = Progress(
-            TextColumn("[bold blue]{task.description}"),
-            BarColumn(bar_width=None),
-            TaskProgressColumn(),
-            DownloadColumn(),
-            TransferSpeedColumn(),
-            TextColumn("[dim]Elapsed:[/dim]"),
-            TimeElapsedColumn(),
-            TextColumn("[dim]ETA:[/dim]"),
-            TimeRemainingColumn(),
-            transient=False,
-            refresh_per_second=10,
-        )
-
-        opciones = OpcionesSubida(
-            borrar_local=args.borrar_local, dry_run=args.dry_run,
-            pausa_min=pausa_min, pausa_max=pausa_max, chunks_paralelos=chunks_paralelos,
-        )
-
-        with progress:
-            task_global_id = progress.add_task(t("progress_total_label"), total=len(pendientes))
-            ctx = ContextoSubida(client, destino, semaforo, progress, task_global_id)
-
-            async def procesar(ruta):
-                nonlocal subidos_ok
-                # La clave se calcula ANTES de subir: con --borrar-local el
-                # archivo ya no existirá después y ruta.stat() fallaría.
-                clave = clave_archivo(ruta)
-                exito = await subir_archivo(ctx, opciones, ruta)
-                if exito and not args.dry_run:
-                    async with lock_registro:
-                        registro[clave] = {"nombre": ruta.name, "ruta_original": str(ruta)}
-                        guardar_registro(registro)
-                        subidos_ok += 1
-
-            await asyncio.gather(*(procesar(ruta) for ruta in pendientes))
-
+        destino = await resolver_destino(client, canal)
+        subidos_ok = await ejecutar_subidas(client, destino, pendientes, registro, opciones)
         log.info(t("log_finished", ok=subidos_ok, total=len(pendientes)))
-
     except KeyboardInterrupt:
         log.warning(t("log_interrupted"))
     finally:

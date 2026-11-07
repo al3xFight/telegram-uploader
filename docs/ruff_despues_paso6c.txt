@@ -1,0 +1,20 @@
+subir_a_telegram.py:149:122: E501 Line too long (133 > 120)
+subir_a_telegram.py:150:120: E501 Line too long (188 > 120)
+subir_a_telegram.py:151:122: E501 Line too long (183 > 120)
+subir_a_telegram.py:175:121: E501 Line too long (127 > 120)
+subir_a_telegram.py:179:121: E501 Line too long (121 > 120)
+subir_a_telegram.py:225:121: E501 Line too long (126 > 120)
+subir_a_telegram.py:238:122: E501 Line too long (135 > 120)
+subir_a_telegram.py:239:120: E501 Line too long (181 > 120)
+subir_a_telegram.py:240:122: E501 Line too long (190 > 120)
+subir_a_telegram.py:264:121: E501 Line too long (130 > 120)
+subir_a_telegram.py:320:122: E501 Line too long (138 > 120)
+subir_a_telegram.py:430:5: C901 `menu_configuracion` is too complex (12 > 10)
+subir_a_telegram.py:619:17: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:634:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+subir_a_telegram.py:676:11: C901 `subir_archivo` is too complex (18 > 10)
+subir_a_telegram.py:676:11: PLR0912 Too many branches (16 > 12)
+subir_a_telegram.py:676:11: PLR0915 Too many statements (76 > 50)
+subir_a_telegram.py:678:24: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:768:13: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+Found 19 errors.
