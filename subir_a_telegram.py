@@ -905,6 +905,9 @@ async def main():
 
             async def procesar(ruta):
                 nonlocal subidos_ok
+                # La clave se calcula ANTES de subir: con --borrar-local el
+                # archivo ya no existirá después y ruta.stat() fallaría.
+                clave = clave_archivo(ruta)
                 exito = await subir_archivo(
                     client, destino, ruta, args.borrar_local, semaforo,
                     args.dry_run, pausa_min, pausa_max, chunks_paralelos,
@@ -912,7 +915,7 @@ async def main():
                 )
                 if exito and not args.dry_run:
                     async with lock_registro:
-                        registro[clave_archivo(ruta)] = {"nombre": ruta.name, "ruta_original": str(ruta)}
+                        registro[clave] = {"nombre": ruta.name, "ruta_original": str(ruta)}
                         guardar_registro(registro)
                         subidos_ok += 1
 
