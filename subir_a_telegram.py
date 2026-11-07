@@ -275,12 +275,22 @@ STRINGS = {
     },
 }
 
-IDIOMA_ACTUAL = "es"  # se ajusta en tiempo de ejecución
+class Traductor:
+    """Traduce claves de texto al idioma activo ("es" o "en")."""
+
+    def __init__(self, idioma: str = "es"):
+        self.idioma = idioma
+
+    def traducir(self, clave: str, **kwargs) -> str:
+        texto = STRINGS.get(self.idioma, STRINGS["en"]).get(clave, clave)
+        return texto.format(**kwargs) if kwargs else texto
+
+
+traductor = Traductor("es")  # el idioma se ajusta en tiempo de ejecución
 
 
 def t(clave: str, **kwargs) -> str:
-    texto = STRINGS.get(IDIOMA_ACTUAL, STRINGS["en"]).get(clave, clave)
-    return texto.format(**kwargs) if kwargs else texto
+    return traductor.traducir(clave, **kwargs)
 
 
 def elegir_idioma_interactivo() -> str:
@@ -397,7 +407,7 @@ def asistente_configuracion(config_actual: dict, primera_vez: bool) -> dict:
     if config["pausa_max"] < config["pausa_min"]:
         config["pausa_min"], config["pausa_max"] = config["pausa_max"], config["pausa_min"]
 
-    config["idioma"] = IDIOMA_ACTUAL
+    config["idioma"] = traductor.idioma
     guardar_config(config)
     console.print(f"\n[green]{t('config_saved')}[/green]\n")
     return config
@@ -418,7 +428,6 @@ def mostrar_config(config: dict) -> None:
 
 
 def menu_configuracion(config: dict) -> dict:
-    global IDIOMA_ACTUAL
     while True:
         console.print()
         mostrar_config(config)
@@ -427,7 +436,7 @@ def menu_configuracion(config: dict) -> dict:
 
         if opcion == "0":
             nuevo_idioma = elegir_idioma_interactivo()
-            IDIOMA_ACTUAL = nuevo_idioma
+            traductor.idioma = nuevo_idioma
             config["idioma"] = nuevo_idioma
         elif opcion == "1":
             try:
@@ -787,8 +796,6 @@ def construir_parser() -> argparse.ArgumentParser:
 
 
 async def main():
-    global IDIOMA_ACTUAL
-
     config = cargar_config()
 
     # Determinar idioma: --lang (temporal) > guardado en config > preguntar
@@ -799,15 +806,15 @@ async def main():
             lang_cli = sys.argv[idx + 1]
 
     if lang_cli in ("es", "en"):
-        IDIOMA_ACTUAL = lang_cli
+        traductor.idioma = lang_cli
     elif config.get("idioma") in ("es", "en"):
-        IDIOMA_ACTUAL = config["idioma"]
+        traductor.idioma = config["idioma"]
     elif "-h" in sys.argv or "--help" in sys.argv:
-        IDIOMA_ACTUAL = "es"  # --help no debe quedar esperando input
+        traductor.idioma = "es"  # --help no debe quedar esperando input
     else:
-        IDIOMA_ACTUAL = elegir_idioma_interactivo()
+        traductor.idioma = elegir_idioma_interactivo()
         if not CONFIG_PATH.exists():
-            config["idioma"] = IDIOMA_ACTUAL  # se confirma al guardar el resto en el wizard
+            config["idioma"] = traductor.idioma  # se confirma al guardar el resto en el wizard
 
     console.print(Panel.fit(
         f"[bold]📡 Telegram Uploader[/bold] [dim]v{VERSION}[/dim]\n{t('banner_subtitle')}",
@@ -832,7 +839,7 @@ async def main():
         console.print(Panel(t("welcome_body"), title=t("welcome_title"), border_style="green"))
         config = asistente_configuracion(config, primera_vez=True)
     elif not config.get("idioma"):
-        config["idioma"] = IDIOMA_ACTUAL
+        config["idioma"] = traductor.idioma
         guardar_config(config)
 
     try:
