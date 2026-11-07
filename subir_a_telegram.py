@@ -11,7 +11,9 @@ Repo / full usage: see README.md
 
 import argparse
 import asyncio
+import contextlib
 import hashlib
+import inspect
 import json
 import logging
 import mimetypes
@@ -22,7 +24,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 from datetime import datetime
 from pathlib import Path
 
@@ -63,6 +64,8 @@ EXTENSIONES_VIDEO = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".3gp"}
 REGISTRO_SUBIDOS = str(SCRIPT_DIR / "subidos.json")
 MAX_REINTENTOS_ERROR = 3
 UMBRAL_ARCHIVO_GRANDE = 10 * 1024 * 1024
+MAX_REINTENTOS_FLOOD = 5
+CARACTERES_VISIBLES = 4
 
 CONFIG_DEFAULTS = {
     "idioma": "",
@@ -330,9 +333,9 @@ def enmascarar(valor) -> str:
     valor = str(valor)
     if not valor:
         return t("not_configured")
-    if len(valor) <= 4:
+    if len(valor) <= CARACTERES_VISIBLES:
         return "*" * len(valor)
-    return "*" * (len(valor) - 4) + valor[-4:]
+    return "*" * (len(valor) - CARACTERES_VISIBLES) + valor[-CARACTERES_VISIBLES:]
 
 
 def pedir_texto(mensaje: str, valor_actual: str = "", obligatorio: bool = True) -> str:
@@ -506,12 +509,13 @@ def _get_video_creation_time(ruta: Path):
         str(ruta),
     ]
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15)
+        result = subprocess.run(# noqa: S603 - lista fija, sin shell
+        cmd, stdout=subprocess.PIPE,    stderr=subprocess.PIPE, text=True, timeout=15, check=False)
         value = result.stdout.strip()
         if not value:
             return None
         return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
-    except Exception:
+    except (subprocess.SubprocessError, OSError, ValueError):
         return None
 
 
@@ -543,7 +547,8 @@ def obtener_atributos_video(ruta: Path):
         str(ruta),
     ]
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15)
+        result = subprocess.run(  # noqa: S603 - lista fija, sin shell
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=15, check=False)
         data = json.loads(result.stdout)
         stream = (data.get("streams") or [{}])[0]
         width = int(stream.get("width", 0) or 0)
@@ -551,8 +556,8 @@ def obtener_atributos_video(ruta: Path):
         duration = float((data.get("format") or {}).get("duration", 0) or 0)
         if width and height:
             return width, height, duration
-    except Exception:
-        pass
+    except (subprocess.SubprocessError, OSError, ValueError) as e:
+        log.debug("ffprobe no pudo leer %s: %s", ruta.name, e)
     return None
 
 
@@ -575,16 +580,16 @@ def generar_miniatura(ruta: Path, duracion: float = 0.0):
         str(destino),
     ]
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
+        result = subprocess.run(  # noqa: S603 - lista fija, sin shell
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20, check=False)
+
         if result.returncode == 0 and destino.exists() and destino.stat().st_size > 0:
             return destino
-    except Exception:
-        pass
+    except (subprocess.SubprocessError, OSError) as e:
+        log.debug("ffmpeg no pudo generar miniatura de %s: %s", ruta.name, e)
 
-    try:
-        destino.unlink(missing_ok=True)
-    except Exception:
-        pass
+    with contextlib.suppress(OSError):
+         destino.unlink(missing_ok=True)
     return None
 
 
@@ -626,7 +631,9 @@ async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progre
             if progress_callback:
                 async with lock:
                     subido += len(parte)
-                    await helpers._maybe_await(progress_callback(subido, file_size))
+                    resultado = progress_callback(subido, file_size)
+                    if inspect.isawaitable(resultado):
+                        await resultado
 
     await asyncio.gather(*(subir_parte(i) for i in range(part_count)))
     return InputFileBig(file_id, part_count, ruta.name)
@@ -691,7 +698,7 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
                     break
                 except FloodWaitError as e:
                     intentos_flood += 1
-                    if intentos_flood > 5:
+                    if intentos_flood > MAX_REINTENTOS_FLOOD:
                         log.error(t("err_flood_too_many", nombre=ruta.name))
                         exito = False
                         break
@@ -707,17 +714,15 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
                     log.warning(t("warn_retry", nombre=ruta.name, error=e,
                                   intento=intentos_error, maximo=MAX_REINTENTOS_ERROR, espera=espera))
                     await asyncio.sleep(espera)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001 - último recurso: se registra y no aborta la cola
                     log.error(t("err_unexpected", nombre=ruta.name, error=e))
                     exito = False
                     break
         finally:
             progress.remove_task(task_id)
             if miniatura:
-                try:
+                with contextlib.suppress(OSError):
                     miniatura.unlink(missing_ok=True)
-                except Exception:
-                    pass
 
         if not exito:
             return False
@@ -732,7 +737,7 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
             log.info(t("log_deleted_local", nombre=ruta.name))
 
         if pausa_max > 0:
-            espera = random.uniform(pausa_min, pausa_max)
+            espera = random.uniform(pausa_min, pausa_max)  # noqa: S311 - pausa anti-spam, no es criptografía
             log.info(t("log_pause", segundos=espera))
             await asyncio.sleep(espera)
 
