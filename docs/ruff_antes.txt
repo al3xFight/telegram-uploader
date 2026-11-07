@@ -1,0 +1,55 @@
+subir_a_telegram.py:25:8: F401 [*] `time` imported but unused
+subir_a_telegram.py:144:122: E501 Line too long (133 > 120)
+subir_a_telegram.py:145:120: E501 Line too long (188 > 120)
+subir_a_telegram.py:146:122: E501 Line too long (183 > 120)
+subir_a_telegram.py:170:121: E501 Line too long (127 > 120)
+subir_a_telegram.py:174:121: E501 Line too long (121 > 120)
+subir_a_telegram.py:220:121: E501 Line too long (126 > 120)
+subir_a_telegram.py:233:122: E501 Line too long (135 > 120)
+subir_a_telegram.py:234:120: E501 Line too long (181 > 120)
+subir_a_telegram.py:235:122: E501 Line too long (190 > 120)
+subir_a_telegram.py:259:121: E501 Line too long (130 > 120)
+subir_a_telegram.py:305:122: E501 Line too long (138 > 120)
+subir_a_telegram.py:333:22: PLR2004 Magic value used in comparison, consider replacing `4` with a constant variable
+subir_a_telegram.py:415:5: C901 `menu_configuracion` is too complex (12 > 10)
+subir_a_telegram.py:416:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:509:18: S603 `subprocess` call: check for execution of untrusted input
+subir_a_telegram.py:509:18: PLW1510 `subprocess.run` without explicit `check` argument
+subir_a_telegram.py:514:12: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:546:18: S603 `subprocess` call: check for execution of untrusted input
+subir_a_telegram.py:546:18: PLW1510 `subprocess.run` without explicit `check` argument
+subir_a_telegram.py:554:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+subir_a_telegram.py:554:12: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:578:18: S603 `subprocess` call: check for execution of untrusted input
+subir_a_telegram.py:578:18: PLW1510 `subprocess.run` without explicit `check` argument
+subir_a_telegram.py:581:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+subir_a_telegram.py:581:12: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:586:5: S110 `try`-`except`-`pass` detected, consider logging the exception
+subir_a_telegram.py:586:12: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:603:17: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:618:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+subir_a_telegram.py:629:27: SLF001 Private member accessed: `_maybe_await`
+subir_a_telegram.py:635:11: C901 `subir_archivo` is too complex (19 > 10)
+subir_a_telegram.py:635:11: PLR0913 Too many arguments in function definition (11 > 5)
+subir_a_telegram.py:635:11: PLR0917 Too many positional arguments (11 > 5)
+subir_a_telegram.py:635:11: PLR0912 Too many branches (17 > 12)
+subir_a_telegram.py:635:11: PLR0915 Too many statements (78 > 50)
+subir_a_telegram.py:639:24: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:694:41: PLR2004 Magic value used in comparison, consider replacing `5` with a constant variable
+subir_a_telegram.py:710:24: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:719:17: S110 `try`-`except`-`pass` detected, consider logging the exception
+subir_a_telegram.py:719:24: BLE001 Do not catch blind exception: `Exception`
+subir_a_telegram.py:731:13: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:735:22: S311 Standard pseudo-random generators are not suitable for cryptographic purposes
+subir_a_telegram.py:763:11: C901 `main` is too complex (26 > 10)
+subir_a_telegram.py:763:11: PLR0912 Too many branches (26 > 12)
+subir_a_telegram.py:763:11: PLR0915 Too many statements (106 > 50)
+subir_a_telegram.py:764:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:764:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:764:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:764:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:846:24: ASYNC250 Blocking call to `input()` in async context
+subir_a_telegram.py:848:15: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:930:24: W292 [*] No newline at end of file
+Found 53 errors.
+[*] 2 fixable with `--fix`.

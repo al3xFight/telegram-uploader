@@ -1,0 +1,21 @@
+11	E501    	[ ] line-too-long
+ 6	BLE001  	[ ] blind-except
+ 5	PLW0603 	[ ] global-statement
+ 4	ASYNC240	[ ] blocking-path-method-in-async-function
+ 4	S110    	[ ] try-except-pass
+ 3	C901    	[ ] complex-structure
+ 3	PLW1510 	[ ] subprocess-run-without-check
+ 3	S603    	[ ] subprocess-without-shell-equals-true
+ 2	PLR2004 	[ ] magic-value-comparison
+ 2	PLR0912 	[ ] too-many-branches
+ 2	PLR0915 	[ ] too-many-statements
+ 1	ASYNC250	[ ] blocking-input-in-async-function
+ 1	ASYNC230	[ ] blocking-open-call-in-async-function
+ 1	W292    	[*] missing-newline-at-end-of-file
+ 1	SLF001  	[ ] private-member-access
+ 1	S311    	[ ] suspicious-non-cryptographic-random-usage
+ 1	PLR0913 	[ ] too-many-arguments
+ 1	PLR0917 	[ ] too-many-positional-arguments
+ 1	F401    	[*] unused-import
+Found 53 errors.
+[*] 2 fixable with `--fix`.
