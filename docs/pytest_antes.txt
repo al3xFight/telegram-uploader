@@ -1,0 +1,56 @@
+................F                                                        [100%]
+================================== FAILURES ===================================
+_______________ test_borrar_local_elimina_y_registra_la_subida ________________
+
+tmp_path = WindowsPath('C:/Users/Pablo Alexander/AppData/Local/Temp/pytest-of-Pablo Alexander/pytest-1/test_borrar_local_elimina_y_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000023A9F305850>
+
+    def test_borrar_local_elimina_y_registra_la_subida(tmp_path, monkeypatch):
+        """DEFECTO CONOCIDO: esta prueba debe FALLAR en el c≤digo original.
+    
+        Con --borrar-local el archivo se elimina y luego main() intenta calcular
+        su clave con ruta.stat(), lo que lanza FileNotFoundError.
+        """
+        archivo = _preparar(tmp_path, monkeypatch, "--borrar-local")
+    
+>       asyncio.run(app.main())
+
+test\test_flujo_completo.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\..\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:725: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+subir_a_telegram.py:919: in main
+    await asyncio.gather(*(procesar(ruta) for ruta in pendientes))
+subir_a_telegram.py:915: in procesar
+    registro[clave_archivo(ruta)] = {"nombre": ruta.name, "ruta_original": str(ruta)}
+             ^^^^^^^^^^^^^^^^^^^
+subir_a_telegram.py:481: in clave_archivo
+    stat = ruta.stat()
+           ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/Pablo Alexander/AppData/Local/Temp/pytest-of-Pablo Alexander/pytest-1/test_borrar_local_elimina_y_re0/entrada/doc.txt')
+follow_symlinks = True
+
+    def stat(self, *, follow_symlinks=True):
+        """
+        Return the result of the stat() system call on this path, like
+        os.stat() does.
+        """
+>       return os.stat(self, follow_symlinks=follow_symlinks)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [WinError 2] El sistema no puede encontrar el archivo especificado: 'C:\\Users\\Pablo Alexander\\AppData\\Local\\Temp\\pytest-of-Pablo Alexander\\pytest-1\\test_borrar_local_elimina_y_re0\\entrada\\doc.txt'
+
+..\..\AppData\Local\Programs\Python\Python313\Lib\pathlib\_local.py:515: FileNotFoundError
+---------------------------- Captured stdout call -----------------------------
+\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 \U0001f4e1 Telegram Uploader v1.1.0                                              \u2502\n\u2502 Sube videos y archivos grandes a tu canal privado, con tu propia cuenta. \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n\U0001f680 Progreso total -------------- 100% 1/1 bytes ? Elapsed: 0:00:00 ETA: 0:00:00
+=========================== short test summary info ===========================
+FAILED test/test_flujo_completo.py::test_borrar_local_elimina_y_registra_la_subida
+1 failed, 16 passed in 2.24s
