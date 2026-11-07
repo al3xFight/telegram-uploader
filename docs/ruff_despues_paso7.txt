@@ -1,0 +1,9 @@
+telegram_uploader\config.py:144:5: C901 `menu_configuracion` is too complex (12 > 10)
+telegram_uploader\subida.py:48:17: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+telegram_uploader\subida.py:63:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+telegram_uploader\subida.py:105:11: C901 `subir_archivo` is too complex (18 > 10)
+telegram_uploader\subida.py:105:11: PLR0912 Too many branches (16 > 12)
+telegram_uploader\subida.py:105:11: PLR0915 Too many statements (76 > 50)
+telegram_uploader\subida.py:107:24: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+telegram_uploader\subida.py:197:13: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+Found 8 errors.

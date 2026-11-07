@@ -1,16 +1,17 @@
 import sys
 from pathlib import Path
 
-import pytest
-
-# Permite "import subir_a_telegram" desde la carpeta test/
+# Permite "import subir_a_telegram" desde la carpeta tests/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
+import pytest
 
 
 @pytest.fixture(autouse=True)
 def idioma_por_defecto():
     """Cada prueba empieza en español, sin arrastrar el idioma de la anterior."""
-    import subir_a_telegram as app
+    from telegram_uploader import i18n
 
-    app.traductor.idioma = "es"
+    i18n.traductor.idioma = "es"
     yield

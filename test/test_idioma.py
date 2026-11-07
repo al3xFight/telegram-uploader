@@ -2,14 +2,14 @@
 import asyncio
 import logging
 
-import subir_a_telegram as app
+from telegram_uploader import cli, config, registro
 
 
 def _ejecutar_en_carpeta_vacia(tmp_path, monkeypatch, idioma):
     carpeta = tmp_path / "vacia"
     carpeta.mkdir()
-    monkeypatch.setattr(app, "CONFIG_PATH", tmp_path / "config.json")
-    monkeypatch.setattr(app, "REGISTRO_SUBIDOS", str(tmp_path / "subidos.json"))
+    monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
+    monkeypatch.setattr(registro, "REGISTRO_SUBIDOS", str(tmp_path / "subidos.json"))
     monkeypatch.setenv("TG_API_ID", "123")
     monkeypatch.setenv("TG_API_HASH", "hash-de-prueba")
     monkeypatch.setenv("TG_CANAL", "@canal")
@@ -17,7 +17,7 @@ def _ejecutar_en_carpeta_vacia(tmp_path, monkeypatch, idioma):
         "sys.argv",
         ["subir_a_telegram.py", "--lang", idioma, "--carpeta", str(carpeta), "--todo"],
     )
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
 
 def test_lang_es_muestra_mensajes_en_espanol(tmp_path, monkeypatch, caplog):

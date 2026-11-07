@@ -5,7 +5,7 @@ No se conecta a Telegram: se reemplaza TelegramClient por una clase simulada.
 import asyncio
 import json
 
-import subir_a_telegram as app
+from telegram_uploader import cli, config, registro, subida
 
 
 class ClienteFalso:
@@ -38,9 +38,9 @@ def _preparar(tmp_path, monkeypatch, *flags):
     archivo = carpeta / "doc.txt"
     archivo.write_text("contenido de prueba")
 
-    monkeypatch.setattr(app, "TelegramClient", ClienteFalso)
-    monkeypatch.setattr(app, "CONFIG_PATH", tmp_path / "config.json")
-    monkeypatch.setattr(app, "REGISTRO_SUBIDOS", str(tmp_path / "subidos.json"))
+    monkeypatch.setattr(subida, "TelegramClient", ClienteFalso)
+    monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
+    monkeypatch.setattr(registro, "REGISTRO_SUBIDOS", str(tmp_path / "subidos.json"))
     monkeypatch.setenv("TG_API_ID", "123")
     monkeypatch.setenv("TG_API_HASH", "hash-de-prueba")
     monkeypatch.setenv("TG_CANAL", "@canal")
@@ -56,7 +56,7 @@ def _preparar(tmp_path, monkeypatch, *flags):
 def test_subida_normal_registra_el_archivo(tmp_path, monkeypatch):
     archivo = _preparar(tmp_path, monkeypatch)
 
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
     assert ClienteFalso.subidas == ["doc.txt"]
     registro = json.loads((tmp_path / "subidos.json").read_text(encoding="utf-8"))
@@ -67,7 +67,7 @@ def test_subida_normal_registra_el_archivo(tmp_path, monkeypatch):
 def test_dry_run_no_sube_ni_registra(tmp_path, monkeypatch):
     _preparar(tmp_path, monkeypatch, "--dry-run")
 
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
     assert ClienteFalso.subidas == []
     assert not (tmp_path / "subidos.json").exists()
@@ -81,12 +81,13 @@ def test_borrar_local_elimina_y_registra_la_subida(tmp_path, monkeypatch):
     """
     archivo = _preparar(tmp_path, monkeypatch, "--borrar-local")
 
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
     assert ClienteFalso.subidas == ["doc.txt"]
     assert not archivo.exists()  # se eliminó localmente
     registro = json.loads((tmp_path / "subidos.json").read_text(encoding="utf-8"))
     assert len(registro) == 1  # y quedó registrado como subido
+
 
 def test_fallo_inesperado_no_borra_el_archivo_ni_lo_registra(tmp_path, monkeypatch):
     """Si la subida falla, --borrar-local NUNCA debe eliminar el archivo."""
@@ -96,9 +97,9 @@ def test_fallo_inesperado_no_borra_el_archivo_ni_lo_registra(tmp_path, monkeypat
             raise ValueError("fallo simulado")
 
     archivo = _preparar(tmp_path, monkeypatch, "--borrar-local")
-    monkeypatch.setattr(app, "TelegramClient", ClienteQueFalla)
+    monkeypatch.setattr(subida, "TelegramClient", ClienteQueFalla)
 
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
     assert archivo.exists()  # se conserva
     assert not (tmp_path / "subidos.json").exists()  # no se registra

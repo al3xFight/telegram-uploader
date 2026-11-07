@@ -1,7 +1,7 @@
 """Prueba de la subida por fragmentos en paralelo (archivos > 10 MB)."""
 import asyncio
 
-import subir_a_telegram as app
+from telegram_uploader import subida
 
 
 class ClienteFalso:
@@ -24,7 +24,7 @@ def test_subida_paralela_envia_todas_las_partes_y_reporta_progreso(tmp_path):
     cliente = ClienteFalso()
     avances = []
 
-    asyncio.run(app.upload_file_paralelo(
+    asyncio.run(subida.upload_file_paralelo(
         cliente, ruta, 4, lambda actual, total: avances.append(actual)))
 
     assert sorted(cliente.partes) == list(range(22))  # 11 MB / 512 KB
@@ -39,6 +39,6 @@ def test_subida_paralela_acepta_callback_asincrono(tmp_path):
     async def callback(actual, total):
         avances.append(actual)
 
-    asyncio.run(app.upload_file_paralelo(cliente, ruta, 4, callback))
+    asyncio.run(subida.upload_file_paralelo(cliente, ruta, 4, callback))
 
     assert max(avances) == ruta.stat().st_size
