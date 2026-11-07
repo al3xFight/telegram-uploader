@@ -24,8 +24,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 try:
     from telethon import TelegramClient, helpers
@@ -639,27 +641,47 @@ async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progre
     return InputFileBig(file_id, part_count, ruta.name)
 
 
-async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semaforo: asyncio.Semaphore,
-                         dry_run: bool, pausa_min: float, pausa_max: float, chunks_paralelos: int,
-                         progress: Progress, task_global_id):
-    async with semaforo:
+@dataclass(frozen=True)
+class OpcionesSubida:
+    """Ajustes de comportamiento de una subida (no cambian entre archivos)."""
+
+    borrar_local: bool = False
+    dry_run: bool = False
+    pausa_min: float = 3.0
+    pausa_max: float = 6.0
+    chunks_paralelos: int = 8
+
+
+@dataclass
+class ContextoSubida:
+    """Recursos compartidos por todas las subidas de una ejecución."""
+
+    client: Any
+    destino: Any
+    semaforo: asyncio.Semaphore
+    progress: Progress
+    task_global_id: Any = None
+
+
+async def subir_archivo(ctx: ContextoSubida, opciones: OpcionesSubida, ruta: Path):
+    async with ctx.semaforo:
         tamano_bytes = ruta.stat().st_size
         tamano_mb = tamano_bytes / (1024 * 1024)
         log.info(t("log_uploading", nombre=ruta.name, mb=tamano_mb))
 
-        if dry_run:
+        if opciones.dry_run:
             log.info(t("dry_run_note"))
-            if task_global_id is not None:
-                progress.advance(task_global_id, 1)
+            if ctx.task_global_id is not None:
+                ctx.progress.advance(ctx.task_global_id, 1)
             return True
 
-        task_id = progress.add_task(f"🎬 {ruta.name[:25].ljust(25)}", total=tamano_bytes)
+        task_id = ctx.progress.add_task(f"🎬 {ruta.name[:25].ljust(25)}", total=tamano_bytes)
         ultimo_progreso = 0
 
         def progreso(actual, total):
             nonlocal ultimo_progreso
             if actual - ultimo_progreso > 0:
-                progress.update(task_id, completed=actual)
+                ctx.progress.update(task_id, completed=actual)
                 ultimo_progreso = actual
 
         es_video = ruta.suffix.lower() in EXTENSIONES_VIDEO
@@ -684,9 +706,9 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
         try:
             while True:
                 try:
-                    handle = await upload_file_paralelo(client, ruta, chunks_paralelos, progreso)
-                    await client.send_file(
-                        destino,
+                    handle = await upload_file_paralelo(ctx.client, ruta, opciones.chunks_paralelos, progreso)
+                    await ctx.client.send_file(
+                        ctx.destino,
                         file=handle,
                         caption=ruta.name,
                         attributes=atributos,
@@ -719,7 +741,7 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
                     exito = False
                     break
         finally:
-            progress.remove_task(task_id)
+            ctx.progress.remove_task(task_id)
             if miniatura:
                 with contextlib.suppress(OSError):
                     miniatura.unlink(missing_ok=True)
@@ -727,22 +749,21 @@ async def subir_archivo(client, destino, ruta: Path, borrar_local: bool, semafor
         if not exito:
             return False
 
-        if task_global_id is not None:
-            progress.advance(task_global_id, 1)
+        if ctx.task_global_id is not None:
+            ctx.progress.advance(ctx.task_global_id, 1)
 
         log.info(t("log_done", nombre=ruta.name))
 
-        if borrar_local:
+        if opciones.borrar_local:
             ruta.unlink()
             log.info(t("log_deleted_local", nombre=ruta.name))
 
-        if pausa_max > 0:
-            espera = random.uniform(pausa_min, pausa_max)  # noqa: S311 - pausa anti-spam, no es criptografía
+        if opciones.pausa_max > 0:
+            espera = random.uniform(opciones.pausa_min, opciones.pausa_max)  # noqa: S311 - pausa anti-spam, no es criptografía
             log.info(t("log_pause", segundos=espera))
             await asyncio.sleep(espera)
 
         return True
-
 
 # ---------------------------------------------------------------------
 # Programa principal
@@ -905,19 +926,21 @@ async def main():
             refresh_per_second=10,
         )
 
+        opciones = OpcionesSubida(
+            borrar_local=args.borrar_local, dry_run=args.dry_run,
+            pausa_min=pausa_min, pausa_max=pausa_max, chunks_paralelos=chunks_paralelos,
+        )
+
         with progress:
             task_global_id = progress.add_task(t("progress_total_label"), total=len(pendientes))
+            ctx = ContextoSubida(client, destino, semaforo, progress, task_global_id)
 
             async def procesar(ruta):
                 nonlocal subidos_ok
                 # La clave se calcula ANTES de subir: con --borrar-local el
                 # archivo ya no existirá después y ruta.stat() fallaría.
                 clave = clave_archivo(ruta)
-                exito = await subir_archivo(
-                    client, destino, ruta, args.borrar_local, semaforo,
-                    args.dry_run, pausa_min, pausa_max, chunks_paralelos,
-                    progress, task_global_id,
-                )
+                exito = await subir_archivo(ctx, opciones, ruta)
                 if exito and not args.dry_run:
                     async with lock_registro:
                         registro[clave] = {"nombre": ruta.name, "ruta_original": str(ruta)}

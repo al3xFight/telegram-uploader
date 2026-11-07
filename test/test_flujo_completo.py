@@ -87,3 +87,18 @@ def test_borrar_local_elimina_y_registra_la_subida(tmp_path, monkeypatch):
     assert not archivo.exists()  # se eliminó localmente
     registro = json.loads((tmp_path / "subidos.json").read_text(encoding="utf-8"))
     assert len(registro) == 1  # y quedó registrado como subido
+
+def test_fallo_inesperado_no_borra_el_archivo_ni_lo_registra(tmp_path, monkeypatch):
+    """Si la subida falla, --borrar-local NUNCA debe eliminar el archivo."""
+
+    class ClienteQueFalla(ClienteFalso):
+        async def send_file(self, destino, file=None, **kwargs):
+            raise ValueError("fallo simulado")
+
+    archivo = _preparar(tmp_path, monkeypatch, "--borrar-local")
+    monkeypatch.setattr(app, "TelegramClient", ClienteQueFalla)
+
+    asyncio.run(app.main())
+
+    assert archivo.exists()  # se conserva
+    assert not (tmp_path / "subidos.json").exists()  # no se registra

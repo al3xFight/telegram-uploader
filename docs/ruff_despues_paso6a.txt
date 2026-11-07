@@ -1,0 +1,30 @@
+subir_a_telegram.py:149:122: E501 Line too long (133 > 120)
+subir_a_telegram.py:150:120: E501 Line too long (188 > 120)
+subir_a_telegram.py:151:122: E501 Line too long (183 > 120)
+subir_a_telegram.py:175:121: E501 Line too long (127 > 120)
+subir_a_telegram.py:179:121: E501 Line too long (121 > 120)
+subir_a_telegram.py:225:121: E501 Line too long (126 > 120)
+subir_a_telegram.py:238:122: E501 Line too long (135 > 120)
+subir_a_telegram.py:239:120: E501 Line too long (181 > 120)
+subir_a_telegram.py:240:122: E501 Line too long (190 > 120)
+subir_a_telegram.py:264:121: E501 Line too long (130 > 120)
+subir_a_telegram.py:310:122: E501 Line too long (138 > 120)
+subir_a_telegram.py:420:5: C901 `menu_configuracion` is too complex (12 > 10)
+subir_a_telegram.py:421:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:610:17: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:625:18: ASYNC230 Async functions should not open files with blocking methods like `open`
+subir_a_telegram.py:666:11: C901 `subir_archivo` is too complex (18 > 10)
+subir_a_telegram.py:666:11: PLR0912 Too many branches (16 > 12)
+subir_a_telegram.py:666:11: PLR0915 Too many statements (76 > 50)
+subir_a_telegram.py:668:24: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:758:13: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+subir_a_telegram.py:789:11: C901 `main` is too complex (26 > 10)
+subir_a_telegram.py:789:11: PLR0912 Too many branches (26 > 12)
+subir_a_telegram.py:789:11: PLR0915 Too many statements (109 > 50)
+subir_a_telegram.py:790:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:790:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:790:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:790:12: PLW0603 Using the global statement to update `IDIOMA_ACTUAL` is discouraged
+subir_a_telegram.py:872:24: ASYNC250 Blocking call to `input()` in async context
+subir_a_telegram.py:874:15: ASYNC240 Async functions should not perform blocking pathlib.Path operations
+Found 29 errors.
