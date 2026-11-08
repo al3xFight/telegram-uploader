@@ -40,8 +40,8 @@ def test_buscar_pendientes_excluye_los_ya_registrados(tmp_path):
 
 
 def test_configurar_idioma_lang_cli_pisa_la_config():
-    cli.configurar_idioma({"idioma": "es"}, ["prog", "--lang", "en"])
-    assert i18n.traductor.idioma == "en"
+    cli.configurar_idioma({"idioma": "rus"}, ["prog", "--lang", "en"])
+    assert i18n.traductor.idioma == "rus"
 
 
 def test_configurar_idioma_usa_la_config_guardada():

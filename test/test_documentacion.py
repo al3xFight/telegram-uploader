@@ -21,7 +21,7 @@ def test_arquitectura_menciona_todos_los_modulos():
     modulos = [p.stem for p in (RAIZ / "telegram_uploader").glob("*.py")
                if p.stem not in ("__init__", "__main__")]
     faltan = [m for m in modulos if f"{m}.py" not in texto]
-    assert not hhhfaltan, f"ARQUITECTURA.md no menciona: {faltan}"
+    assert not faltan, f"ARQUITECTURA.md no menciona: {faltan}"
 
 
 def test_i18n_tiene_las_mismas_claves_en_ambos_idiomas():
