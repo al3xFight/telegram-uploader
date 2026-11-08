@@ -1,4 +1,5 @@
 # 📡 Telegram Uploader
+![CI](https://github.com/al3xFight/telegram-uploader/actions/workflows/ci.yml/badge.svg)
 
 Sube videos y otros archivos grandes a un **canal o grupo privado de Telegram** usando **tu propia
 cuenta** (no un bot), mediante [Telethon](https://docs.telethon.dev/). Interfaz en español e inglés.

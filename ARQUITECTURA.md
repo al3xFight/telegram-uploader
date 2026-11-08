@@ -141,4 +141,4 @@ Luego: copia los cambios, ejecuta `pytest` y `ruff`, y revisa el resultado antes
 - `menu_configuracion` es compleja: reemplazar el `if/elif` por una tabla de opciones.
 - Algunas operaciones de archivo bloquean el bucle asíncrono (`asyncio.to_thread`).
 - Si una subida falla a mitad de un archivo, se reintenta desde cero (no reanuda por fragmentos).
-- Aún no hay integración continua automática (pendiente: GitHub Actions).
+- `ruff` corre en la integración continua pero sin bloquear (`continue-on-error`) mientras queden los 8 hallazgos documentados; al resolverlos, se quita esa línea para que bloquee.
