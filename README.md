@@ -104,6 +104,7 @@ ruff check telegram_uploader subir_a_telegram.py herramientas
 ```
 
 - **Cómo está organizado el código y cómo agregar funciones:** [`ARQUITECTURA.md`](ARQUITECTURA.md)
+> Para el procedimiento completo, con un ejemplo de punta a punta, ver `GUIA_DESARROLLO.md`.
 - **Historial de versiones:** [`CHANGELOG.md`](CHANGELOG.md)
 - **Pegar el proyecto a una IA:** `python herramientas/contexto.py`
 

@@ -2,7 +2,7 @@
 
 > Guía para quien vaya a **modificar o ampliar** el programa, sea una persona o un asistente de IA.
 > Para usarlo, ver `README.md`. Para generar un archivo listo para pegar a una IA:
-> `python herramientas/contexto.py` (ver la sección 6).
+> `python herramientas/contexto.py` (ver la sección 7).
 
 ## 1. Qué hace
 
@@ -23,7 +23,7 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos, reintentos, barra de progreso. |
 | `telegram_uploader/cli.py` | Argumentos, validación y flujo de `main()`. Es el único que conoce a todos. |
-| `tests/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
+| `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
 
 **Regla de dependencias:** solo hacia abajo, nunca en círculo.
@@ -114,7 +114,7 @@ python -m pytest -q                       # todas las pruebas deben pasar
 ruff check telegram_uploader subir_a_telegram.py herramientas
 ```
 
-Si agregas comportamiento nuevo, agrega también su prueba en `tests/`.
+Si agregas comportamiento nuevo, agrega también su prueba en `test/`.
 
 ## 7. Cómo pedirle un cambio a una IA
 

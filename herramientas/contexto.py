@@ -163,8 +163,8 @@ def construir(modulos_pedidos, solo_mapa: bool, con_pruebas: bool) -> str:
         for m in elegidos:
             partes.append(bloque(f"{NOMBRE_PAQUETE}/{m}.py", PAQUETE / f"{m}.py"))
         if con_pruebas:
-            for prueba in sorted((RAIZ / "tests").glob("*.py")):
-                partes.append(bloque(f"tests/{prueba.name}", prueba))
+            for prueba in sorted((RAIZ / "test").glob("*.py")):
+                partes.append(bloque(f"test/{prueba.name}", prueba))
     return "".join(partes)
 
 
@@ -173,7 +173,7 @@ def main() -> int:
     parser.add_argument("--mapa", action="store_true", help="Solo guía y mapa, sin código fuente.")
     parser.add_argument("--modulos", nargs="+", metavar="MODULO",
                         help="Incluye solo estos módulos y los que ellos necesitan.")
-    parser.add_argument("--con-pruebas", action="store_true", help="Agrega también los archivos de tests/.")
+    parser.add_argument("--con-pruebas", action="store_true", help="Agrega también los archivos de test/.")
     parser.add_argument("-o", "--salida", default="contexto.txt", help="Archivo de salida (por defecto contexto.txt).")
     args = parser.parse_args()
 

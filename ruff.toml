@@ -11,4 +11,4 @@ max-complexity = 10
 # Los textos de la interfaz son datos, no lógica: partirlos en varias líneas los vuelve ilegibles.
 "telegram_uploader/i18n.py" = ["E501"]
 # Las pruebas usan assert y archivos temporales por diseño.
-"tests/*" = ["S101", "S603", "ASYNC240", "ASYNC230"]
+"test/*" = ["S101", "S603", "ASYNC240", "ASYNC230"]
