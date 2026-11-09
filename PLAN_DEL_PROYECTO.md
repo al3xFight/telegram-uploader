@@ -3,20 +3,22 @@
 ## 1. Visión del producto
 Para personas que necesitan respaldar videos y archivos grandes en un canal privado
 de Telegram, Telegram Uploader es una herramienta de línea de comandos que sube los
-archivos con la cuenta personal del usuario, sin duplicar lo ya enviado y sin exponer
-sus credenciales. A diferencia de subir a mano, es repetible, reanudable entre
-ejecuciones y está documentada.
+archivos con la cuenta personal del usuario, sin duplicar lo ya enviado y sin incluir
+sus credenciales en el código ni en el repositorio. A diferencia de subir a mano, es repetible,
+retoma la cola pendiente entre ejecuciones y está documentada.
 
 ## 2. Alcance
 **Incluye:** subida a un canal o grupo privado, subida por fragmentos en paralelo,
 miniaturas, orden cronológico, registro de subidos, interfaz en español e inglés,
-simulación con `--dry-run`.
+simulación con `--dry-run`. 
+Asistente de configuración interactivo, reintentos y manejo de los límites de Telegram, y borrado opcional del archivo local tras una subida confirmada (`--borrar-local`).
 
 **No incluye (límites):**
 - Descargar archivos desde Telegram.
 - Interfaz gráfica.
 - Subir a varios destinos en una sola ejecución.
 - Usar bots (usa la cuenta del usuario).
+- Tamaño máximo por archivo: el que Telegram permite a las cuentas gratuitas (2 GB).
 
 ## 3. Restricciones
 - Depende de Telethon y de los límites de velocidad de Telegram (`FloodWait`).
