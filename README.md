@@ -23,7 +23,7 @@ Run `python subir_a_telegram.py --lang en --help` for the English help.*
 - Una cuenta de Telegram y sus credenciales de API (`api_id` y `api_hash`), gratis en
   <https://my.telegram.org/apps>
 - Un canal o grupo privado de destino del que seas miembro o administrador
-- *Opcional:* `ffmpeg` (miniaturas y orden por metadata) y `cryptg` (subidas más rápidas)
+- `ffmpeg` instalado en el sistema (miniaturas y orden por metadata). Ver cómo instalarlo más abajo.
 
 ## Instalación
 
@@ -31,8 +31,17 @@ Run `python subir_a_telegram.py --lang en --help` for the English help.*
 git clone <URL-de-tu-repositorio>
 cd telegram-uploader
 pip install -r requirements.txt
-pip install cryptg        # opcional
 ```
+
+### Instalar ffmpeg (no se instala con pip)
+
+| Sistema | Comando |
+|---|---|
+| Windows | `winget install Gyan.FFmpeg` (reinicia la terminal después) |
+| macOS | `brew install ffmpeg` |
+| Linux (Debian/Ubuntu) | `sudo apt install ffmpeg` |
+
+Comprueba que funciona con `ffmpeg -version`.
 
 ## Primer uso
 
@@ -107,7 +116,9 @@ ruff check telegram_uploader subir_a_telegram.py herramientas
 - **Cómo está organizado el código y cómo agregar funciones:** [`ARQUITECTURA.md`](ARQUITECTURA.md)
 > Para el procedimiento completo, con un ejemplo de punta a punta, ver `GUIA_DESARROLLO.md`.
 - **Historial de versiones:** [`CHANGELOG.md`](CHANGELOG.md)
-- **Pegar el proyecto a una IA:** `python herramientas/contexto.py`
+- **Pegar el proyecto a una IA:** `python herramientas/contexto
+- **Visión, alcance y backlog:** [`PLAN_DEL_PROYECTO.md`](PLAN_DEL_PROYECTO.md).py`
+
 
 ## Solución de problemas
 
@@ -116,4 +127,4 @@ ruff check telegram_uploader subir_a_telegram.py herramientas
 | *No se pudo encontrar el canal* | Que el nombre/ID sea correcto y que tu cuenta esté unida al canal (`--config` para corregir) |
 | *Telegram pide esperar N segundos* | Es el límite de subidas de Telegram; el programa espera solo |
 | Sin miniaturas ni orden por metadata | Instala `ffmpeg` y verifica que esté en el `PATH` |
-| Subidas lentas | Instala `cryptg` y sube `--chunks-paralelos` |
+| Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
