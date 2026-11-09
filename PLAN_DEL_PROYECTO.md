@@ -61,3 +61,20 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 
 **Priorización:** atender primero R1, R3 y R6 (exposición 6).
 **Revisión:** se revisa este registro al cerrar cada versión nueva.
+
+## 7. Método de trabajo
+
+El proyecto combina tres niveles:
+
+1. **Fases (reingeniería de software):** inventario, ingeniería inversa, mantenimiento
+   correctivo, reestructuración de código, reestructuración de documentación e
+   ingeniería directa. Actualmente se encuentra en ingeniería directa.
+2. **Gestión del trabajo (Kanban):** tablero en GitHub Projects con columnas Todo,
+   In Progress y Done. Límite de trabajo en curso (WIP): una sola tarjeta en
+   In Progress. Cada elemento del backlog (sección 4) tiene un Issue enlazado y el
+   orden de Todo respeta la prioridad.
+3. **Prácticas técnicas (Extreme Programming):** pruebas antes del código,
+   refactorización continua, integración continua y cambios pequeños.
+
+Una tarjeta pasa a Done solo cuando cumple la definición de terminado: código,
+pruebas en verde, CI en verde y documentación actualizada.
