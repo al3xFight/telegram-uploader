@@ -4,30 +4,53 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 
 ## [1.2.0] - 2026-11-07
 
-### Corregido
-- `--borrar-local` ya no provoca `FileNotFoundError` ni interrumpe la cola: la clave del archivo
-  se calcula antes de subirlo.
-
 ### Añadido
-- Pruebas automatizadas con `pytest` (38 pruebas, con un cliente de Telegram simulado).
-- Análisis estático con `ruff` y su configuración (`ruff.toml`).
+- Pruebas automatizadas con `pytest`: 38 pruebas, con un cliente de Telegram simulado.
 - Documentación: `README.md`, `ARQUITECTURA.md` y este registro de cambios.
 - `herramientas/contexto.py`: genera el contexto del proyecto para pegar a un asistente de IA.
 - Ejecución como paquete: `python -m telegram_uploader`.
-- `requirements.txt` y `requirements-dev.txt`.
+- `requirements-dev.txt`.
+- Integración continua con GitHub Actions (ruff y pytest en Python 3.10 y 3.12).
+- Versiones fijas de dependencias; `cryptg` incluido según la versión de Python.
+- `PLAN_DEL_PROYECTO.md`: visión, alcance, restricciones, backlog, registro de riesgos y método de trabajo.
+- `GUIA_DESARROLLO.md`: guía para agregar funciones, con apoyo de IA.
+- Plantilla de solicitud de cambio (`.github/ISSUE_TEMPLATE/`).
 
 ### Cambiado
-- El código se reorganizó del archivo único al paquete `telegram_uploader` (8 módulos).
-- `subir_archivo` pasó de 11 parámetros a 3 (`ContextoSubida`, `OpcionesSubida`, `ruta`).
-- El idioma se gestiona con la clase `Traductor`; se eliminó la variable global.
+- La documentación indica cómo instalar ffmpeg.
+
+### Seguridad
+- `.gitignore` ampliado para excluir también archivos de contexto y de trabajo.
+
+## [1.1.6] - 2026-11-07
+
+### Cambiado
+- El código se reorganizó del archivo único al paquete `telegram_uploader` (8 módulos), con reglas de dependencia entre módulos.
 - `main()` se dividió en funciones de una sola responsabilidad.
+- Advertencias de ruff: de 19 a 8 (la configuración se ajustó en este paso: `E501` ignorado en `i18n.py` y reglas relajadas en pruebas).
+
+## [1.1.5] - 2026-11-07
+(incluye la etiqueta `v1.1.4`, que apunta al mismo commit)
+
+### Cambiado
+- El idioma se gestiona con la clase `Traductor`; se eliminó la variable global.
+- Advertencias de ruff: de 29 a 24.
+
+## [1.1.3] - 2026-11-07
+
+### Cambiado
+- `subir_archivo` pasó de 11 parámetros a 3 (`ContextoSubida`, `OpcionesSubida`, `ruta`).
+- Advertencias de ruff: de 31 a 29.
+
+## [1.1.2] - 2026-11-07
+
+### Cambiado
+- Se atendieron hallazgos de `ruff`: de 53 a 31 advertencias.
 - Las excepciones silenciadas se reemplazaron por excepciones específicas y registro de depuración.
 - Se dejó de usar una función privada de Telethon (`helpers._maybe_await`).
 
-### Seguridad
-- `.gitignore` excluye `config.json`, los archivos de sesión de Telegram y `subidos.json`.
+## [1.1.1] - 2026-11-07
 
-## [1.1.0] - línea base
-
-Código original, conservado sin modificaciones en `referencia/subir_a_telegram.original.py`
-(etiqueta de git `v1.1.0-original`).
+### Corregido
+- `--borrar-local` ya no provoca `FileNotFoundError` ni interrumpe la cola: la clave del archivo
+  se calcula
