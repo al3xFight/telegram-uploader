@@ -26,7 +26,6 @@ jobs:
 
       - name: Análisis estático (ruff)
         run: ruff check telegram_uploader subir_a_telegram.py herramientas
-        continue-on-error: true  # deuda conocida: 8 hallazgos pendientes (ver ARQUITECTURA.md, sección 8)
 
       - name: Pruebas (pytest)
         run: python -m pytest -q
