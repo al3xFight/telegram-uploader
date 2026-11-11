@@ -5,6 +5,7 @@ import pytest
 from test_flujo_completo import ClienteFalso, _preparar
 
 from telegram_uploader import cli, subida
+from telegram_uploader import config
 
 
 def test_carpeta_inexistente_termina_con_error(tmp_path, monkeypatch):
@@ -56,3 +57,20 @@ def test_segunda_ejecucion_no_vuelve_a_subir(tmp_path, monkeypatch):
 
     asyncio.run(cli.main())  # mismo archivo, ya registrado
     assert ClienteFalso.subidas == ["doc.txt"]  # no se repite
+
+def test_editar_api_id_invalido_no_modifica(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "abc")
+    datos = {"api_id": 123}
+    assert config.editar_api_id(datos) is False
+    assert datos["api_id"] == 123
+
+
+def test_editar_api_id_valido_guarda_el_numero(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "456")
+    datos = {"api_id": 123}
+    assert config.editar_api_id(datos) is True
+    assert datos["api_id"] == 456
+
+
+def test_menu_tiene_una_edicion_por_opcion():
+    assert set(config.EDICIONES) == set("0123456")
