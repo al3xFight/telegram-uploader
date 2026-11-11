@@ -1,39 +1,47 @@
 # 📡 Telegram Uploader
+
 ![CI](https://github.com/al3xFight/telegram-uploader/actions/workflows/ci.yml/badge.svg)
 
-Sube videos y otros archivos grandes a un **canal o grupo privado de Telegram** usando **tu propia
-cuenta** (no un bot), mediante [Telethon](https://docs.telethon.dev/). Interfaz en español e inglés.
+**Sube tus videos y archivos grandes a un canal privado de Telegram, de forma automática.**
+Usa tu propia cuenta (no un bot), así que puedes subir archivos de hasta **2 GB** sin pagar Telegram
+Premium. Interfaz en español e inglés.
 
-*English: uploads large videos and files to a private Telegram channel/group with your own account.
+*English: uploads large videos and files to a private Telegram channel/group using your own account.
 Run `python subir_a_telegram.py --lang en --help` for the English help.*
 
-## Características
+## ¿Para qué sirve?
 
-- Subida de **fragmentos en paralelo** para archivos grandes (más rápida).
-- **Miniaturas** y atributos de video automáticos (requiere `ffmpeg`, opcional).
-- **Orden cronológico** por metadata del video, por fecha en el nombre o por fecha de modificación.
-- **Registro de subidos** (`subidos.json`): no repite archivos ya enviados.
-- Manejo de límites de Telegram (`FloodWait`) y reintentos con espera creciente.
-- Modo `--dry-run` para simular sin subir nada.
-- Asistente de configuración interactivo (`--config`); no hay que editar archivos a mano.
+Si usas un canal privado de Telegram como tu nube personal, subir los archivos a mano es lento y
+repetitivo. Este programa lo hace por ti:
 
-## Requisitos
+- Sube **toda una carpeta** de una vez, en orden cronológico.
+- **No repite** lo que ya subiste: recuerda los archivos enviados entre ejecuciones.
+- Respeta los **límites de Telegram**: espera entre subidas y reintenta solo si hay un error.
+- Funciona desde la terminal; no hay que editar archivos a mano.
 
-- Python 3.10 o superior
-- Una cuenta de Telegram y sus credenciales de API (`api_id` y `api_hash`), gratis en
-  <https://my.telegram.org/apps>
-- Un canal o grupo privado de destino del que seas miembro o administrador
-- `ffmpeg` instalado en el sistema (miniaturas y orden por metadata). Ver cómo instalarlo más abajo.
+## Antes de empezar
+
+Necesitas:
+
+1. **Python 3.10 o superior.**
+2. **Una cuenta de Telegram** y un **canal o grupo privado** de destino, del que seas miembro o
+   administrador.
+3. **Tus credenciales de API** (`api_id` y `api_hash`). Son gratuitas y se piden una sola vez:
+   1. Entra a <https://my.telegram.org/apps> e inicia sesión con tu número de teléfono.
+   2. Crea una aplicación (el nombre y la descripción pueden ser los que quieras).
+   3. Copia el `api_id` y el `api_hash` que te muestra. **No los compartas con nadie.**
+4. **`ffmpeg`** (opcional, recomendado): genera miniaturas de los videos y permite ordenarlos por su
+   fecha real. Sin él, el programa funciona igual, pero sin miniaturas.
 
 ## Instalación
 
 ```bash
-git clone <URL-de-tu-repositorio>
+git clone https://github.com/al3xFight/telegram-uploader.git
 cd telegram-uploader
 pip install -r requirements.txt
 ```
 
-### Instalar ffmpeg (no se instala con pip)
+### Instalar ffmpeg (opcional, no se instala con pip)
 
 | Sistema | Comando |
 |---|---|
@@ -49,17 +57,22 @@ Comprueba que funciona con `ffmpeg -version`.
 python subir_a_telegram.py
 ```
 
-La primera vez pregunta el idioma y abre el asistente: te pide `api_id`, `api_hash`, el canal de
-destino (`@usuario` o ID numérico como `-1001234567890`) y los ajustes de velocidad. Después de iniciar
-sesión con tu cuenta, la sesión queda guardada y no vuelve a pedirse.
+La primera vez, el programa:
 
-## Ejemplos
+1. Te pregunta el **idioma**.
+2. Abre el **asistente de configuración**: te pide tu `api_id`, tu `api_hash` y el canal de destino
+   (`@usuario` o ID numérico como `-1001234567890`), además de los ajustes de velocidad.
+3. Inicia sesión en Telegram con tu cuenta (te pedirá tu teléfono y el código que Telegram te envía).
+
+La sesión queda guardada y no vuelve a pedirse. Después, el programa te pregunta qué carpeta subir.
+
+## Uso diario
 
 ```bash
 # Subir todos los videos de una carpeta
 python subir_a_telegram.py --carpeta "D:/Videos/viaje"
 
-# Simular primero, sin subir nada
+# Simular primero, sin subir nada (recomendado la primera vez)
 python subir_a_telegram.py --carpeta "D:/Videos/viaje" --dry-run
 
 # Subir todo tipo de archivos y borrar el original tras cada subida exitosa
@@ -97,29 +110,6 @@ prioridad sobre el archivo de configuración.
 - `--borrar-local` es opcional y solo actúa tras una subida confirmada, pero **elimina archivos de
   verdad**: prueba antes con `--dry-run`.
 
-## Datos que genera (junto a `subir_a_telegram.py`)
-
-| Archivo | Contenido |
-|---|---|
-| `config.json` | Tu configuración |
-| `sesion_telegram.session` | Sesión iniciada de Telegram |
-| `subidos.json` | Registro de archivos ya subidos |
-
-## Desarrollo
-
-```bash
-pip install -r requirements-dev.txt
-python -m pytest -q                                  # pruebas
-ruff check telegram_uploader subir_a_telegram.py herramientas
-```
-
-- **Cómo está organizado el código y cómo agregar funciones:** [`ARQUITECTURA.md`](ARQUITECTURA.md)
-> Para el procedimiento completo, con un ejemplo de punta a punta, ver `GUIA_DESARROLLO.md`.
-- **Historial de versiones:** [`CHANGELOG.md`](CHANGELOG.md)
-- **Pegar el proyecto a una IA:** `python herramientas/contexto
-- **Visión, alcance y backlog:** [`PLAN_DEL_PROYECTO.md`](PLAN_DEL_PROYECTO.md).py`
-
-
 ## Solución de problemas
 
 | Síntoma | Qué revisar |
@@ -129,5 +119,38 @@ ruff check telegram_uploader subir_a_telegram.py herramientas
 | Sin miniaturas ni orden por metadata | Instala `ffmpeg` y verifica que esté en el `PATH` |
 | Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
 
-  ## Licencia
-  MIT. Ver el archivo `LICENSE`.
+## Qué no hace
+
+- No descarga archivos desde Telegram.
+- No tiene interfaz gráfica.
+- Sube a un solo destino por ejecución.
+- No usa bots: siempre opera con tu cuenta.
+
+## Archivos que crea
+
+Se guardan junto a `subir_a_telegram.py`:
+
+| Archivo | Contenido |
+|---|---|
+| `config.json` | Tu configuración |
+| `sesion_telegram.session` | Sesión iniciada de Telegram |
+| `subidos.json` | Registro de archivos ya subidos |
+
+## Para desarrolladores
+
+¿Quieres entender el código o agregar funciones?
+
+- **Cómo está organizado y sus reglas:** [`ARQUITECTURA.md`](ARQUITECTURA.md)
+- **Guía paso a paso para agregar una función:** [`GUIA_DESARROLLO.md`](GUIA_DESARROLLO.md)
+- **Visión, alcance y backlog:** [`PLAN_DEL_PROYECTO.md`](PLAN_DEL_PROYECTO.md)
+- **Historial de versiones:** [`CHANGELOG.md`](CHANGELOG.md)
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q                                  # pruebas
+ruff check telegram_uploader subir_a_telegram.py herramientas
+```
+
+## Licencia
+
+MIT. Ver el archivo `LICENSE`.
