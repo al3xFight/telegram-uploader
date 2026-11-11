@@ -42,3 +42,14 @@ def test_subida_paralela_acepta_callback_asincrono(tmp_path):
     asyncio.run(subida.upload_file_paralelo(cliente, ruta, 4, callback))
 
     assert max(avances) == ruta.stat().st_size
+
+def test_tamano_archivo(tmp_path):
+    archivo = tmp_path / "datos.bin"
+    archivo.write_bytes(b"abc")
+    assert subida.tamano_archivo(archivo) == 3
+
+
+def test_leer_parte_devuelve_el_fragmento(tmp_path):
+    archivo = tmp_path / "datos.bin"
+    archivo.write_bytes(b"0123456789")
+    assert subida.leer_parte(archivo, 3, 4) == b"3456"
