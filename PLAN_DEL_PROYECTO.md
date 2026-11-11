@@ -184,12 +184,12 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 
 El método es Kanban, que fluye de forma continua y no usa sprints de contenido fijo. Para planificar se define una **cadencia de 2 semanas**: al cierre de cada ciclo se revisa lo hecho, se actualiza el registro de riesgos y se elige lo siguiente. La capacidad estimada es de 18 a 24 horas por ciclo (9 a 12 horas semanales, sección 8.3). Se trabaja con un elemento a la vez (WIP = 1) y cada elemento cumple la definición de terminado de la sección 7.
 
-| Ciclo | Elementos | Resultado esperado |
-|---|---|---|
-| 1 | Operaciones bloqueantes en asyncio | Se espera eliminar los hallazgos de `ruff` de tipo ASYNC |
-| 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Se espera eliminar los hallazgos de complejidad |
-| 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos |
-| 4 | Opción `--limite N` | Versión 1.3.0 |
+| Ciclo | Elementos | Resultado | Estado |
+|---|---|---|---|
+| 1 | Operaciones bloqueantes en asyncio | Eliminados los 4 hallazgos de `ruff` de tipo ASYNC | Completado |
+| 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Eliminados los hallazgos de complejidad | Completado |
+| 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos | Completado |
+| 4 | Opción `--limite N` | Versión 1.3.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
 
