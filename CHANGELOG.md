@@ -15,6 +15,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y 
 - `PLAN_DEL_PROYECTO.md`: visión, alcance, restricciones, backlog, registro de riesgos y método de trabajo.
 - `GUIA_DESARROLLO.md`: guía para agregar funciones, con apoyo de IA.
 - Plantilla de solicitud de cambio (`.github/ISSUE_TEMPLATE/`).
+- Licencia MIT (`LICENSE`).
 
 ### Cambiado
 - La documentación indica cómo instalar ffmpeg.

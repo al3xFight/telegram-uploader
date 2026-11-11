@@ -124,3 +124,32 @@ El proyecto se distribuye bajo la licencia MIT (archivo `LICENSE`), compatible c
 ### 8.3 Talento humano
 
 Un desarrollador, que asume todos los roles (ver sección 9). Dedicación aproximada: 9 a 12 horas por semana (3 horas por día, de 3 a 4 días). Conocimientos requeridos: Python, programación asíncrona, uso de Git y de la API de Telegram.
+
+## 9. Estructura del equipo y roles
+
+### 9.1 Estructura propuesta (ficticia, con fines académicos)
+
+Equipo pequeño, multifuncional y centrado en el producto, de 4 integrantes más un representante del usuario final. El tamaño favorece el flujo continuo de Kanban y un límite de trabajo en curso (WIP) bajo.
+
+| Rol | Responsabilidades | Dónde se refleja en el repositorio | Dedicación |
+|---|---|---|---|
+| Product Owner | Mantener y priorizar el backlog; decidir las solicitudes de cambio; velar por la visión y el alcance | `PLAN_DEL_PROYECTO.md`, Issues, plantilla de solicitud de cambio | Parcial |
+| Tech Lead | Garantizar la arquitectura y sus invariantes; revisar los cambios; gestionar la deuda técnica y los riesgos técnicos | `ARQUITECTURA.md`, registro de riesgos | Parcial |
+| Desarrollador | Implementar las funciones; escribir las pruebas antes del código; refactorizar | `telegram_uploader/`, `test/` | Completa |
+| Ingeniero DevOps | Mantener la integración continua, las dependencias con versión fija y las etiquetas de versión | `.github/workflows/ci.yml`, `requirements*.txt`, etiquetas | Parcial |
+
+**Representante del usuario final** (no integrante del equipo): valida que las funciones resuelvan la necesidad de respaldar archivos en un canal privado, y participa en la priorización mediante el Product Owner.
+
+**Decisiones:**
+
+| Decisión | Quién decide |
+|---|---|
+| Aceptar o rechazar un cambio de alcance | Product Owner |
+| Aprobar un cambio de diseño que afecte las reglas de arquitectura | Tech Lead |
+| Publicar una versión (etiqueta) | Tech Lead, con la verificación de DevOps (CI en verde) |
+
+El asistente de IA no es un integrante del equipo: es una herramienta cuyas propuestas verifica y asume quien las usa (ver `GUIA_DESARROLLO.md`).
+
+### 9.2 Situación real
+
+El proyecto lo desarrolla **una sola persona**, que asume los cuatro roles, con una dedicación de 9 a 12 horas semanales (sección 8.3). Los roles se distinguen por los artefactos que produce cada uno (columna "Dónde se refleja"), de modo que si el equipo creciera, la responsabilidad podría repartirse sin reorganizar el repositorio.

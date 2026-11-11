@@ -128,3 +128,6 @@ ruff check telegram_uploader subir_a_telegram.py herramientas
 | *Telegram pide esperar N segundos* | Es el límite de subidas de Telegram; el programa espera solo |
 | Sin miniaturas ni orden por metadata | Instala `ffmpeg` y verifica que esté en el `PATH` |
 | Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
+
+  ## Licencia
+  MIT. Ver el archivo `LICENSE`.
