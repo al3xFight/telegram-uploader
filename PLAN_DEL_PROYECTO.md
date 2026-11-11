@@ -18,7 +18,6 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 - Interfaz gráfica.
 - Subir a varios destinos en una sola ejecución.
 - Usar bots (usa la cuenta del usuario).
-- Tamaño máximo por archivo: el que Telegram permite a las cuentas gratuitas (2 GB).
 
 ## 3. Restricciones
 - Depende de Telethon y de los límites de velocidad de Telegram (`FloodWait`).
@@ -26,6 +25,7 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 - Python 3.10 o superior.
 - Los datos sensibles nunca deben entrar al repositorio (`config.json`, `*.session`).
 - Equipo de una persona: capacidad limitada.
+- Tamaño máximo por archivo: el que Telegram permite a las cuentas gratuitas (2 GB).
 
 ## 4. Product backlog (ordenado por prioridad)
 
@@ -80,3 +80,47 @@ El proyecto combina tres niveles:
 
 Una tarjeta pasa a Done solo cuando cumple la definición de terminado: código,
 pruebas en verde, CI en verde y documentación actualizada.
+
+## 8. Gestión de recursos
+
+### 8.1 Infraestructura
+
+| Recurso | Uso en el proyecto | Costo |
+|---|---|---|
+| Equipo del desarrollador (Windows, Python 3.13) | Desarrollo y ejecución del programa. El programa corre de forma local; no hay servidor propio. | Equipo propio, sin costo adicional |
+| GitHub (repositorio, Issues, Projects) | Código, historial de versiones, backlog y tablero Kanban | Plan gratuito |
+| GitHub Actions | Integración continua: `ruff` y `pytest` en Python 3.10 y 3.12 | Incluido en el plan gratuito |
+| Telegram (cuenta personal y canal privado) | Destino de las subidas; la cuenta gratuita permite archivos de hasta 2 GB | Gratuito |
+
+El proyecto no requiere infraestructura en la nube propia: la nube es de terceros (GitHub y Telegram) y se usa en sus planes gratuitos.
+
+### 8.2 Herramientas SaaS y licencias
+
+**Dependencias directas** (verificadas con `pip-licenses` en un entorno limpio con solo los requisitos del proyecto):
+
+| Herramienta | Versión | Uso | Licencia |
+|---|---|---|---|
+| Telethon | 1.45.0 | Cliente de la API de Telegram | MIT |
+| Rich | 12.6.0 | Interfaz de consola | MIT |
+| cryptg | 0.6.0 (Python 3.11 o superior) | Acelera el cifrado de las transferencias | CC0 (dominio público) |
+| pytest | 9.2.0 | Pruebas automatizadas | MIT |
+| ruff | 0.17.4 | Análisis estático | MIT |
+
+La instalación en Python 3.10 usa una versión anterior de `cryptg`, cuya licencia no se verificó.
+
+**Dependencias transitivas:** pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), commonmark (BSD), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT).
+
+Todas las licencias son permisivas o de dominio público; ninguna es de copyleft, por lo que no imponen condiciones a la licencia del proyecto.
+
+**Servicios:**
+
+| Servicio | Uso | Plan |
+|---|---|---|
+| GitHub | Control de versiones, Issues, Projects y CI | Gratuito |
+| Asistente de IA | Apoyo al desarrollo, bajo el proceso de `GUIA_DESARROLLO.md` | Gratuito |
+
+El proyecto se distribuye bajo la licencia MIT (archivo `LICENSE`), compatible con las licencias de sus dependencias.
+
+### 8.3 Talento humano
+
+Un desarrollador, que asume todos los roles (ver sección 9). Dedicación aproximada: 9 a 12 horas por semana (3 horas por día, de 3 a 4 días). Conocimientos requeridos: Python, programación asíncrona, uso de Git y de la API de Telegram.
