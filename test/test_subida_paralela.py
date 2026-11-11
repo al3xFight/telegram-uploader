@@ -2,6 +2,7 @@
 import asyncio
 
 from telegram_uploader import subida
+from types import SimpleNamespace
 
 
 class ClienteFalso:
@@ -53,3 +54,27 @@ def test_leer_parte_devuelve_el_fragmento(tmp_path):
     archivo = tmp_path / "datos.bin"
     archivo.write_bytes(b"0123456789")
     assert subida.leer_parte(archivo, 3, 4) == b"3456"
+
+def test_preparar_medios_archivo_que_no_es_video(tmp_path):
+    ruta = tmp_path / "notas.txt"
+    ruta.write_text("hola")
+    meta = subida.preparar_medios(ruta)
+    assert meta == subida.MetadatosArchivo()
+    assert not meta.es_video
+    assert meta.miniatura is None
+
+
+def test_callback_progreso_solo_avanza():
+    class FalsoProgreso:
+        def __init__(self):
+            self.llamadas = []
+
+        def update(self, task_id, completed):
+            self.llamadas.append(completed)
+
+    ctx = SimpleNamespace(progress=FalsoProgreso())
+    callback = subida.crear_callback_progreso(ctx, 1)
+    callback(10, 100)
+    callback(10, 100)
+    callback(30, 100)
+    assert ctx.progress.llamadas == [10, 30]
