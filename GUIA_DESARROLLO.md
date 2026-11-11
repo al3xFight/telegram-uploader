@@ -58,7 +58,7 @@ def test_limite_sube_como_maximo_n_archivos(tmp_path, monkeypatch):
     for nombre in ("b.txt", "c.txt", "d.txt"):
         (archivo.parent / nombre).write_text("x")
 
-    asyncio.run(app.main())
+    asyncio.run(cli.main())
 
     assert len(ClienteFalso.subidas) == 2
 ```
@@ -69,7 +69,7 @@ y en `test/test_validaciones.py`:
 def test_limite_menor_que_1_termina_con_error(tmp_path, monkeypatch):
     _preparar(tmp_path, monkeypatch, "--limite", "0")
     with pytest.raises(SystemExit) as salida:
-        asyncio.run(app.main())
+        asyncio.run(cli.main())
     assert salida.value.code == 1
 ```
 
