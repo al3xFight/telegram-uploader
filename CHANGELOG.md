@@ -2,6 +2,17 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.2.1] - 2026-11-10
+
+### Cambiado
+- Las operaciones de archivo (tamaño, lectura de fragmentos y borrado local) se ejecutan en hilos con `asyncio.to_thread` y ya no bloquean el bucle asíncrono.
+- `subir_archivo` se dividió en funciones de una sola responsabilidad (`preparar_medios`, `crear_callback_progreso`, `simular_subida`, `enviar_con_reintentos` y `finalizar_subida`).
+- `menu_configuracion` usa una tabla de opciones (`EDICIONES`) en lugar de ramas encadenadas.
+- `ruff` bloquea la integración continua; los hallazgos pasaron de 8 a 0.
+
+### Añadido
+- 7 pruebas nuevas (45 en total).
+
 ## [1.2.0] - 2026-11-07
 
 ### Añadido
