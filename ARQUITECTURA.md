@@ -137,8 +137,5 @@ Luego: copia los cambios, ejecuta `pytest` y `ruff`, y revisa el resultado antes
 
 ## 8. Limitaciones conocidas (trabajo futuro)
 
-- `subir_archivo` sigue siendo larga (complejidad 18): extraer preparación de video y bucle de reintentos.
-- `menu_configuracion` es compleja: reemplazar el `if/elif` por una tabla de opciones.
 - Las llamadas a `ffmpeg` (atributos y miniaturas de video) son síncronas y detienen el bucle asíncrono mientras se ejecutan. Las operaciones de archivo (tamaño, lectura de fragmentos y borrado local) ya se ejecutan en hilos con `asyncio.to_thread`.
-- Si una subida falla a mitad de un archivo, se reintenta desde cero (no reanuda por fragmentos).
 - `ruff` corre en la integración continua y bloquea la fusión si hay hallazgos.

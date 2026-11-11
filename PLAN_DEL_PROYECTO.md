@@ -34,11 +34,11 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 | Issue | Elemento | Tipo | Prioridad | Estado |
 |---|---|---|---|---|
 | #2 | Opción --limite N: subir como máximo N archivos por ejecución | funcion | alta | Pendiente |
-| #3 | Resolver los 8 hallazgos de ruff y hacer que bloquee en CI | deuda | alta | Pendiente |
-| #4 | Dividir subir_archivo (complejidad 18) | deuda | media | Pendiente |
-| #5 | Simplificar menu_configuracion con una tabla de opciones | deuda | media | Pendiente |
+| #3 | Resolver los 8 hallazgos de ruff y hacer que bloquee en CI | deuda | alta | Cerrado |
+| #4 | Dividir subir_archivo (complejidad 18) | deuda | media | Cerrado |
+| #5 | Simplificar menu_configuracion con una tabla de opciones | deuda | media | Cerrado |
 | #6 | Reanudar subidas por fragmentos | funcion | baja | Pendiente |
-| #7 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | deuda | baja | Pendiente |
+| #7 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | deuda | baja | Cerrado |
 | #9 | Interfaz grafica | funcion | baja | Pospuesta |
 | #10 | Subir a varios canales o grupos en una misma ejecucion | funcion | baja | Pospuesta |
 | #11 | Soporte para grupos con temas (por verificar que la API lo permita) | funcion | baja | Pospuesta |
@@ -175,7 +175,7 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Etapa | Versión | Contenido | Estado |
 |---|---|---|---|
 | Hecho | 1.2.0 | Reestructuración: paquete modular, pruebas, análisis estático, CI, documentación y plan del proyecto | Completada |
-| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio, dividir `subir_archivo`, simplificar `menu_configuracion` y que `ruff` bloquee la integración continua | Planificada |
+| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio, dividir `subir_archivo`, simplificar `menu_configuracion` y que `ruff` bloquee la integración continua | Completada |
 | Siguiente | 1.3.0 | Opción `--limite N` | Planificada |
 | Después | 1.4.0 | Reanudar subidas por fragmentos | Planificada |
 | Después | A definir | Ideas de evolución del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
