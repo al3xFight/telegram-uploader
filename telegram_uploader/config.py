@@ -1,6 +1,7 @@
 """Configuración del usuario: lectura, escritura atómica, asistente y menú de edición."""
 import json
 import os
+from functools import partial
 
 from rich.panel import Panel
 from rich.table import Table
@@ -141,6 +142,51 @@ def mostrar_config(config: dict) -> None:
     console.print(tabla)
 
 
+def editar_idioma(config: dict) -> bool:
+    nuevo_idioma = elegir_idioma_interactivo()
+    traductor.idioma = nuevo_idioma
+    config["idioma"] = nuevo_idioma
+    return True
+
+
+def editar_api_id(config: dict) -> bool:
+    """Devuelve False (sin modificar nada) si el valor no es numérico."""
+    try:
+        config["api_id"] = int(pedir_texto(t("label_api_id"), str(config["api_id"])))
+    except ValueError:
+        console.print(f"   [yellow]⚠️  {t('err_api_id_numeric')}[/yellow]")
+        return False
+    return True
+
+
+def editar_texto(config: dict, clave: str, etiqueta: str) -> bool:
+    config[clave] = pedir_texto(t(etiqueta), str(config[clave]))
+    return True
+
+
+def editar_chunks(config: dict) -> bool:
+    config["chunks_paralelos"] = int(pedir_numero(
+        t("label_chunks"), config["chunks_paralelos"], tipo=int, minimo=1))
+    return True
+
+
+def editar_numero(config: dict, clave: str, etiqueta: str, tipo=float, minimo=0) -> bool:
+    config[clave] = pedir_numero(t(etiqueta), config[clave], tipo=tipo, minimo=minimo)
+    return True
+
+
+# Opción del menú -> función que edita ese campo. Devuelve True si hay algo que guardar.
+EDICIONES = {
+    "0": editar_idioma,
+    "1": editar_api_id,
+    "2": partial(editar_texto, clave="api_hash", etiqueta="label_api_hash"),
+    "3": partial(editar_texto, clave="canal", etiqueta="label_canal"),
+    "4": editar_chunks,
+    "5": partial(editar_numero, clave="pausa_min", etiqueta="label_pausa_min"),
+    "6": partial(editar_numero, clave="pausa_max", etiqueta="label_pausa_max"),
+}
+
+
 def menu_configuracion(config: dict) -> dict:
     while True:
         console.print()
@@ -148,39 +194,17 @@ def menu_configuracion(config: dict) -> dict:
         console.print(f"\n{t('menu_options_line')}")
         opcion = input(f"{t('menu_prompt')} ").strip().lower()
 
-        if opcion == "0":
-            nuevo_idioma = elegir_idioma_interactivo()
-            traductor.idioma = nuevo_idioma
-            config["idioma"] = nuevo_idioma
-        elif opcion == "1":
-            try:
-                config["api_id"] = int(pedir_texto(t("label_api_id"), str(config["api_id"])))
-            except ValueError:
-                console.print(f"   [yellow]⚠️  {t('err_api_id_numeric')}[/yellow]")
-                continue
-        elif opcion == "2":
-            config["api_hash"] = pedir_texto(t("label_api_hash"), str(config["api_hash"]))
-        elif opcion == "3":
-            config["canal"] = pedir_texto(t("label_canal"), str(config["canal"]))
-        elif opcion == "4":
-            config["chunks_paralelos"] = int(pedir_numero(
-                t("label_chunks"), config["chunks_paralelos"], tipo=int, minimo=1))
-        elif opcion == "5":
-            config["pausa_min"] = pedir_numero(t("label_pausa_min"), config["pausa_min"], tipo=float, minimo=0)
-        elif opcion == "6":
-            config["pausa_max"] = pedir_numero(t("label_pausa_max"), config["pausa_max"], tipo=float, minimo=0)
-        elif opcion == "r":
+        if opcion == "r":
             config = asistente_configuracion(config, primera_vez=False)
-            continue
         elif opcion == "s":
             guardar_config(config)
             console.print(f"[green]{t('menu_saved')}[/green]")
             return config
+        elif opcion in EDICIONES:
+            if EDICIONES[opcion](config):
+                guardar_config(config)
         else:
             console.print(f"[yellow]{t('menu_invalid')}[/yellow]")
-            continue
-
-        guardar_config(config)
 
 
 def ejecutar_modo_config(config: dict) -> None:
