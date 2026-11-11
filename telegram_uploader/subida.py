@@ -43,9 +43,19 @@ def resolver_canal(valor: str):
         return int(valor)
     return valor
 
+def tamano_archivo(ruta: Path) -> int:
+    """Tamaño del archivo en bytes (operación bloqueante, se ejecuta en un hilo)."""
+    return ruta.stat().st_size
+
+
+def leer_parte(ruta: Path, desplazamiento: int, tamano: int) -> bytes:
+    """Lee un fragmento del archivo (operación bloqueante, se ejecuta en un hilo)."""
+    with open(ruta, "rb") as f:
+        f.seek(desplazamiento)
+        return f.read(tamano)
 
 async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progress_callback=None):
-    file_size = ruta.stat().st_size
+    file_size = await asyncio.to_thread(tamano_archivo, ruta)
     if file_size <= UMBRAL_ARCHIVO_GRANDE or chunks_paralelos <= 1:
         return await client.upload_file(str(ruta), part_size_kb=512, progress_callback=progress_callback)
 
@@ -60,9 +70,7 @@ async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progre
     async def subir_parte(idx):
         nonlocal subido
         async with semaforo:
-            with open(ruta, "rb") as f:
-                f.seek(idx * part_size)
-                parte = f.read(part_size)
+            parte = await asyncio.to_thread(leer_parte, ruta, idx * part_size, part_size)
 
             ok = await client(SaveBigFilePartRequest(file_id, idx, part_count, parte))
             if not ok:
@@ -104,7 +112,7 @@ class ContextoSubida:
 
 async def subir_archivo(ctx: ContextoSubida, opciones: OpcionesSubida, ruta: Path):
     async with ctx.semaforo:
-        tamano_bytes = ruta.stat().st_size
+        tamano_bytes = await asyncio.to_thread(tamano_archivo, ruta)
         tamano_mb = tamano_bytes / (1024 * 1024)
         log.info(t("log_uploading", nombre=ruta.name, mb=tamano_mb))
 
@@ -194,7 +202,7 @@ async def subir_archivo(ctx: ContextoSubida, opciones: OpcionesSubida, ruta: Pat
         log.info(t("log_done", nombre=ruta.name))
 
         if opciones.borrar_local:
-            ruta.unlink()
+            await asyncio.to_thread(ruta.unlink)
             log.info(t("log_deleted_local", nombre=ruta.name))
 
         if opciones.pausa_max > 0:
