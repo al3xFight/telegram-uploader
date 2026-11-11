@@ -29,18 +29,20 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 
 ## 4. Backlog del producto
 
-| ID | Elemento | Tipo | Prioridad | Estado | Issue |
-|---|---|---|---|---|---|
-| B1 | Opción `--limite N` | Función | Alta | Pendiente | #2 |
-| B2 | Resolver los 8 hallazgos de `ruff` y hacer que bloqueen la integración continua | Deuda | Alta | Pendiente | #3 |
-| B3 | Dividir `subir_archivo` (complejidad 18) | Deuda | Media | Pendiente | #4 |
-| B4 | Simplificar `menu_configuracion` | Deuda | Media | Pendiente | #5 |
-| B5 | Reanudar subidas por fragmentos | Función | Baja | Pendiente | #6 |
-| B6 | Evitar operaciones de archivo bloqueantes en asyncio | Deuda | Baja | Pendiente | #7 |
-| B7 | Interfaz gráfica | Función | Baja | Pospuesta | Sin Issue aún |
-| B8 | Subir a varios canales o grupos en una misma ejecución | Función | Baja | Pospuesta | Sin Issue aún |
-| B9 | Soporte para grupos con temas (por verificar que la API lo permita) | Función | Baja | Pospuesta | Sin Issue aún |
-| B10 | Operación desde varios equipos (definir el manejo de la sesión de Telegram) | Función | Baja | Pospuesta | Sin Issue aún |
+   La fuente de verdad del backlog son los Issues del repositorio, organizados en el tablero de GitHub Projects. La siguiente tabla se genera a partir de ellos y es una instantánea del 10 de noviembre de 2026.
+
+| Issue | Elemento | Tipo | Prioridad | Estado |
+|---|---|---|---|---|
+| #2 | Opción --limite N: subir como máximo N archivos por ejecución | funcion | alta | Pendiente |
+| #3 | Resolver los 8 hallazgos de ruff y hacer que bloquee en CI | deuda | alta | Pendiente |
+| #4 | Dividir subir_archivo (complejidad 18) | deuda | media | Pendiente |
+| #5 | Simplificar menu_configuracion con una tabla de opciones | deuda | media | Pendiente |
+| #6 | Reanudar subidas por fragmentos | funcion | baja | Pendiente |
+| #7 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | deuda | baja | Pendiente |
+| #9 | Interfaz grafica | funcion | baja | Pospuesta |
+| #10 | Subir a varios canales o grupos en una misma ejecucion | funcion | baja | Pospuesta |
+| #11 | Soporte para grupos con temas (por verificar que la API lo permita) | funcion | baja | Pospuesta |
+| #12 | Operacion desde varios equipos (definir el manejo de la sesion de Telegram) | funcion | baja | Pospuesta |
 
 Los elementos B7 a B10 son ideas de evolución que quedan fuera del alcance actual (sección 2). Se crean sus Issues cuando se planteen con detalle, mediante el proceso de la sección 5.
 
@@ -168,15 +170,15 @@ El proyecto lo desarrolla **una sola persona**, que asume los cuatro roles, con 
 
 ## 10. Roadmap del producto
 
-El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen el versionado semántico.
+El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen el versionado semántico. Cada elemento corresponde a un Issue del backlog (sección 4).
 
-| Etapa | Versión | Contenido (elementos del backlog) | Estado |
+| Etapa | Versión | Contenido | Estado |
 |---|---|---|---|
 | Hecho | 1.2.0 | Reestructuración: paquete modular, pruebas, análisis estático, CI, documentación y plan del proyecto | Completada |
-| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio (B6), dividir `subir_archivo` (B3), simplificar `menu_configuracion` (B4) y que `ruff` bloquee la integración continua (B2) | Planificada |
-| Siguiente | 1.3.0 | Opción `--limite N` (B1) | Planificada |
-| Después | 1.4.0 | Reanudar subidas por fragmentos (B5) | Planificada |
-| Después | A definir | Ideas de evolución del backlog (filas posteriores), sujetas al proceso de gestión de cambios | Pospuesta |
+| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio, dividir `subir_archivo`, simplificar `menu_configuracion` y que `ruff` bloquee la integración continua | Planificada |
+| Siguiente | 1.3.0 | Opción `--limite N` | Planificada |
+| Después | 1.4.0 | Reanudar subidas por fragmentos | Planificada |
+| Después | A definir | Ideas de evolución del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
 ## 11. Plan de iteraciones
 
@@ -184,10 +186,10 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 
 | Ciclo | Elementos | Resultado esperado |
 |---|---|---|
-| 1 | #B6 operaciones bloqueantes en asyncio | Se espera eliminar los hallazgos de `ruff` de tipo ASYNC |
-| 2 | #B3 dividir `subir_archivo` y #B4 simplificar `menu_configuracion` | Se espera eliminar los hallazgos de complejidad |
-| 3 | #B2 `ruff` bloqueante en CI | Cero hallazgos y CI que falla ante nuevos |
-| 4 | #B1 `--limite N` | Versión 1.3.0 |
+| 1 | Operaciones bloqueantes en asyncio | Se espera eliminar los hallazgos de `ruff` de tipo ASYNC |
+| 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Se espera eliminar los hallazgos de complejidad |
+| 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos |
+| 4 | Opción `--limite N` | Versión 1.3.0 |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
 
