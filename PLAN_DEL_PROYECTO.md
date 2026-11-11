@@ -27,16 +27,28 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 - Equipo de una persona: capacidad limitada.
 - Tamaño máximo por archivo: el que Telegram permite a las cuentas gratuitas (2 GB).
 
-## 4. Product backlog (ordenado por prioridad)
+## 4. Backlog del producto
 
-| # | Elemento | Tipo | Prioridad |
-|---|----------|------|-----------|
-| 1 | Opción `--limite N` (subir como máximo N archivos por ejecución) | Función | Alta |
-| 2 | Resolver los 8 hallazgos de `ruff` y hacer que bloquee en CI | Deuda técnica | Alta |
-| 3 | Dividir `subir_archivo` (complejidad 18) | Deuda técnica | Media |
-| 4 | Simplificar `menu_configuracion` con una tabla de opciones | Deuda técnica | Media |
-| 5 | Reanudar subidas por fragmentos | Función | Baja |
-| 6 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | Deuda técnica | Baja |
+| ID | Elemento | Tipo | Prioridad | Estado | Issue |
+|---|---|---|---|---|---|
+| B1 | Opción `--limite N` | Función | Alta | Pendiente | #2 |
+| B2 | Resolver los 8 hallazgos de `ruff` y hacer que bloqueen la integración continua | Deuda | Alta | Pendiente | #3 |
+| B3 | Dividir `subir_archivo` (complejidad 18) | Deuda | Media | Pendiente | #4 |
+| B4 | Simplificar `menu_configuracion` | Deuda | Media | Pendiente | #5 |
+| B5 | Reanudar subidas por fragmentos | Función | Baja | Pendiente | #6 |
+| B6 | Evitar operaciones de archivo bloqueantes en asyncio | Deuda | Baja | Pendiente | #7 |
+| B7 | Interfaz gráfica | Función | Baja | Pospuesta | Sin Issue aún |
+| B8 | Subir a varios canales o grupos en una misma ejecución | Función | Baja | Pospuesta | Sin Issue aún |
+| B9 | Soporte para grupos con temas (por verificar que la API lo permita) | Función | Baja | Pospuesta | Sin Issue aún |
+| B10 | Operación desde varios equipos (definir el manejo de la sesión de Telegram) | Función | Baja | Pospuesta | Sin Issue aún |
+
+Los elementos B7 a B10 son ideas de evolución que quedan fuera del alcance actual (sección 2). Se crean sus Issues cuando se planteen con detalle, mediante el proceso de la sección 5.
+
+### Solicitudes de cambio resueltas
+
+| Issue | Solicitud | Decisión | Motivo |
+|---|---|---|---|
+| #__ | Descargar los videos desde el canal | Rechazada | Fuera del alcance: la visión del producto es subir, no descargar |
 
 ## 5. Gestión de solicitudes de cambio
 1. Se registra la petición como un elemento nuevo del backlog (qué, por qué).
@@ -153,3 +165,41 @@ El asistente de IA no es un integrante del equipo: es una herramienta cuyas prop
 ### 9.2 Situación real
 
 El proyecto lo desarrolla **una sola persona**, que asume los cuatro roles, con una dedicación de 9 a 12 horas semanales (sección 8.3). Los roles se distinguen por los artefactos que produce cada uno (columna "Dónde se refleja"), de modo que si el equipo creciera, la responsabilidad podría repartirse sin reorganizar el repositorio.
+
+## 10. Roadmap del producto
+
+El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen el versionado semántico.
+
+| Etapa | Versión | Contenido (elementos del backlog) | Estado |
+|---|---|---|---|
+| Hecho | 1.2.0 | Reestructuración: paquete modular, pruebas, análisis estático, CI, documentación y plan del proyecto | Completada |
+| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio (B6), dividir `subir_archivo` (B3), simplificar `menu_configuracion` (B4) y que `ruff` bloquee la integración continua (B2) | Planificada |
+| Siguiente | 1.3.0 | Opción `--limite N` (B1) | Planificada |
+| Después | 1.4.0 | Reanudar subidas por fragmentos (B5) | Planificada |
+| Después | A definir | Ideas de evolución del backlog (filas posteriores), sujetas al proceso de gestión de cambios | Pospuesta |
+
+## 11. Plan de iteraciones
+
+El método es Kanban, que fluye de forma continua y no usa sprints de contenido fijo. Para planificar se define una **cadencia de 2 semanas**: al cierre de cada ciclo se revisa lo hecho, se actualiza el registro de riesgos y se elige lo siguiente. La capacidad estimada es de 18 a 24 horas por ciclo (9 a 12 horas semanales, sección 8.3). Se trabaja con un elemento a la vez (WIP = 1) y cada elemento cumple la definición de terminado de la sección 7.
+
+| Ciclo | Elementos | Resultado esperado |
+|---|---|---|
+| 1 | #B6 operaciones bloqueantes en asyncio | Se espera eliminar los hallazgos de `ruff` de tipo ASYNC |
+| 2 | #B3 dividir `subir_archivo` y #B4 simplificar `menu_configuracion` | Se espera eliminar los hallazgos de complejidad |
+| 3 | #B2 `ruff` bloqueante en CI | Cero hallazgos y CI que falla ante nuevos |
+| 4 | #B1 `--limite N` | Versión 1.3.0 |
+
+Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
+
+## 12. Plan de comunicación
+
+| Qué se comunica | Audiencia | Canal | Frecuencia | Responsable |
+|---|---|---|---|---|
+| Estado del trabajo | Equipo y docente | Tablero de GitHub Projects | Continuo | Desarrollador |
+| Solicitudes de cambio y decisiones | Equipo | Issues con la plantilla de cambio | Cuando ocurren | Product Owner |
+| Cambios por versión | Usuarios y equipo | `CHANGELOG.md` y etiquetas | Con cada versión | Ingeniero DevOps |
+| Reglas de arquitectura | Desarrolladores | `ARQUITECTURA.md` | Cuando cambian | Tech Lead |
+| Riesgos | Equipo | Registro de riesgos (sección 6) | Cada ciclo de 2 semanas | Tech Lead |
+| Avances y entregas del proyecto | Docente | Informe técnico | Cada entrega | Desarrollador |
+
+La comunicación es principalmente **asíncrona** y escrita (Issues, documentos y changelog), de modo que cualquier persona pueda incorporarse sin explicación directa. Con el equipo propuesto (sección 9.1) se sumaría una reunión síncrona breve al cierre de cada ciclo. En la situación real (un solo desarrollador) esa revisión se hace como autorrevisión y queda por escrito en los Issues.
