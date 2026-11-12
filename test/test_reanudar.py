@@ -71,6 +71,17 @@ class ClienteQueFallaAlEnviar(ClienteRegistrador):
         if self.envios == 1:
             raise self.error
 
+class RegistroFalso:
+    """Reemplaza al log para comprobar qué mensajes ve el usuario."""
+
+    def __init__(self):
+        self.mensajes = []
+
+    def info(self, mensaje):
+        self.mensajes.append(mensaje)
+
+    warning = info
+    error = info
 
 async def _sin_espera(_segundos):
     return None
@@ -138,6 +149,8 @@ def test_error_al_enviar_reutiliza_las_partes_ya_subidas(tmp_path, monkeypatch):
 
 def test_partes_ausentes_en_telegram_reinician_con_un_file_id_nuevo(tmp_path, monkeypatch):
     monkeypatch.setattr(subida.asyncio, "sleep", _sin_espera)
+    registro = RegistroFalso()
+    monkeypatch.setattr(subida, "log", registro)
     ruta = _archivo_grande(tmp_path)
     cliente = ClienteQueFallaAlEnviar(FilePartMissingError(None, capture=3))
 
@@ -146,6 +159,25 @@ def test_partes_ausentes_en_telegram_reinician_con_un_file_id_nuevo(tmp_path, mo
     assert cliente.envios == 2
     assert len(cliente.ids) == 2  # las partes caducaron: se empezó de cero
     assert len(cliente.partes) == 44
+    assert subida.t("warn_parts_expired", nombre=ruta.name, parte=3) in registro.mensajes
+
+
+def test_al_reanudar_se_avisa_cuantos_fragmentos_ya_estaban_subidos(tmp_path, monkeypatch):
+    registro = RegistroFalso()
+    monkeypatch.setattr(subida, "log", registro)
+    ruta = _archivo_grande(tmp_path)
+    cliente = ClienteQueFallaUnaVez(parte_que_falla=10)
+    estado = subida.EstadoSubida()
+
+    with pytest.raises(ConnectionError):
+        asyncio.run(subida.upload_file_paralelo(cliente, ruta, 2, estado=estado))
+    hechas = len(estado.completadas)
+    assert registro.mensajes == []  # en el primer intento no hay nada que reanudar
+
+    asyncio.run(subida.upload_file_paralelo(cliente, ruta, 2, estado=estado))
+
+    esperado = subida.t("log_resuming", nombre=ruta.name, hechas=hechas, total=22)
+    assert esperado in registro.mensajes
 
 
 def test_partes_enviadas_reproducen_el_archivo_original(tmp_path):

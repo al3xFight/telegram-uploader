@@ -2,6 +2,17 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.3.0] - 2026-11-12
+
+### Añadido
+- Reanudación de subidas por fragmentos dentro de la misma ejecución: si un intento falla, el reintento envía solo los fragmentos que faltan, con el mismo identificador de archivo, y la barra de progreso arranca en lo ya subido.
+- Mensajes en español e inglés al reanudar y cuando Telegram ya no conserva los fragmentos.
+- 6 pruebas nuevas (51 en total), incluida una que comprueba que los fragmentos enviados reproducen el archivo original.
+
+### Cambiado
+- Si un fragmento falla, se cancelan los pendientes en lugar de dejarlos subiéndose en segundo plano.
+- Si Telegram ya no conserva fragmentos de un archivo, la subida se reinicia desde cero con un identificador nuevo.
+
 ## [1.2.1] - 2026-11-10
 
 ### Cambiado

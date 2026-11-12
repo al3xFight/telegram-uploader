@@ -136,6 +136,7 @@ async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int,
                 await avisar_progreso(progress_callback, subido, file_size)
 
     if subido:
+        log.info(t("log_resuming", nombre=ruta.name, hechas=len(estado.completadas), total=part_count))
         # Al reanudar, la barra de progreso arranca en lo que ya estaba subido.
         await avisar_progreso(progress_callback, subido, file_size)
 
@@ -248,6 +249,7 @@ async def enviar_con_reintentos(ctx: ContextoSubida, opciones: OpcionesSubida, r
         except (RPCError, ConnectionError, OSError) as e:
             if isinstance(e, FilePartMissingError):
                 estado = EstadoSubida()  # los fragmentos caducaron en Telegram: se empieza de cero
+                log.warning(t("warn_parts_expired", nombre=ruta.name, parte=e.which))
             intentos_error += 1
             if intentos_error > MAX_REINTENTOS_ERROR:
                 log.error(t("err_persistent", nombre=ruta.name, error=e))

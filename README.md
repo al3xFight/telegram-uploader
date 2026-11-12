@@ -18,6 +18,7 @@ repetitivo. Este programa lo hace por ti:
 - **No repite** lo que ya subiste: recuerda los archivos enviados entre ejecuciones.
 - Respeta los **límites de Telegram**: espera entre subidas y reintenta solo si hay un error.
 - Funciona desde la terminal; no hay que editar archivos a mano.
+- Si se corta la conexión a mitad de un archivo grande, **retoma desde donde quedó** en lugar de empezar de nuevo (dentro de la misma ejecución).
 
 ## Antes de empezar
 
@@ -118,6 +119,7 @@ prioridad sobre el archivo de configuración.
 | *Telegram pide esperar N segundos* | Es el límite de subidas de Telegram; el programa espera solo |
 | Sin miniaturas ni orden por metadata | Instala `ffmpeg` y verifica que esté en el `PATH` |
 | Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
+| Se cortó la conexión a mitad de un archivo | El programa reintenta solo y retoma desde el último fragmento subido; verás el aviso `Reanudando…` |
 
 ## Qué no hace
 
@@ -125,6 +127,7 @@ prioridad sobre el archivo de configuración.
 - No tiene interfaz gráfica.
 - Sube a un solo destino por ejecución.
 - No usa bots: siempre opera con tu cuenta.
+- No retoma una subida si cierras el programa: al volver a ejecutarlo, el archivo se sube desde cero.
 
 ## Archivos que crea
 

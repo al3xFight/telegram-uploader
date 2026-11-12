@@ -199,6 +199,7 @@ Antes de escribir código, dime qué dudas tienes sobre el comportamiento.
 - [ ] ¿Actualiza pruebas, versión, CHANGELOG y README?
 - [ ] ¿Puedo explicar cada línea sin mirar la respuesta? Si no, no se acepta.
 - [ ] ¿pytest en verde y ruff sin hallazgos nuevos?
+- [ ] ¿El cambio tiene un efecto visible para el usuario (un mensaje, una opción en `--help` o un dato en pantalla)? Si no lo tiene, justifica por qué.
 
 ## 8. Errores comunes
 - Inventar claves de texto o firmas que no existen.
