@@ -175,10 +175,10 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Etapa | Versión | Contenido | Estado |
 |---|---|---|---|
 | Hecho | 1.2.0 | Reestructuración: paquete modular, pruebas, análisis estático, CI, documentación y plan del proyecto | Completada |
-| Siguiente | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo bloqueantes en asyncio, dividir `subir_archivo`, simplificar `menu_configuracion` y que `ruff` bloquee la integración continua | Completada |
-| Siguiente | 1.3.0 | Opción `--limite N` | Planificada |
-| Después | 1.4.0 | Reanudar subidas por fragmentos | Planificada |
-| Después | A definir | Ideas de evolución del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
+| Hecho | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo en hilos, `subir_archivo` dividida, `menu_configuracion` con tabla de opciones y `ruff` bloqueante en la integración continua | Completada |
+| Hecho | 1.3.0 | Reanudar subidas por fragmentos dentro de la misma ejecución | Completada |
+| Siguiente | 1.4.0 | Opción `--limite N` | Planificada |
+| Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
 ## 11. Plan de iteraciones
 
@@ -189,7 +189,8 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 | 1 | Operaciones bloqueantes en asyncio | Eliminados los 4 hallazgos de `ruff` de tipo ASYNC | Completado |
 | 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Eliminados los hallazgos de complejidad | Completado |
 | 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos | Completado |
-| 4 | Opción `--limite N` | Versión 1.3.0 | Planificado |
+| 4 | Reanudar subidas por fragmentos (misma ejecución) | Versión 1.3.0 | Completado |
+| 5 | Opción `--limite N` | Versión 1.4.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
 
