@@ -5,7 +5,7 @@ import inspect
 import mimetypes
 import random
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,7 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 from telethon import TelegramClient, helpers
-from telethon.errors import FloodWaitError, RPCError
+from telethon.errors import FilePartMissingError, FloodWaitError, RPCError
 from telethon.tl.functions.upload import SaveBigFilePartRequest
 from telethon.tl.types import DocumentAttributeVideo, InputFileBig
 
@@ -54,17 +54,71 @@ def leer_parte(ruta: Path, desplazamiento: int, tamano: int) -> bytes:
         f.seek(desplazamiento)
         return f.read(tamano)
 
-async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progress_callback=None):
+@dataclass
+class EstadoSubida:
+    """Avance de la subida por fragmentos de un archivo.
+
+    Se crea una vez por archivo y se reutiliza entre reintentos: así se conserva el
+    file_id y no se vuelven a enviar los fragmentos que Telegram ya recibió.
+    """
+
+    file_id: int | None = None
+    part_count: int = 0
+    completadas: set = field(default_factory=set)
+
+    def reiniciar(self, part_count: int) -> None:
+        self.file_id = helpers.generate_random_long()
+        self.part_count = part_count
+        self.completadas = set()
+
+
+def bytes_subidos(completadas: set, part_size: int, file_size: int) -> int:
+    """Bytes que representan las partes ya subidas (la última puede ser más corta)."""
+    return sum(min(part_size, file_size - idx * part_size) for idx in completadas)
+
+
+def preparar_estado(estado: EstadoSubida | None, part_count: int) -> EstadoSubida:
+    """Reutiliza el estado si corresponde al mismo archivo; si no, empieza uno nuevo."""
+    if estado is None:
+        estado = EstadoSubida()
+    if estado.file_id is None or estado.part_count != part_count:
+        estado.reiniciar(part_count)
+    return estado
+
+
+async def avisar_progreso(callback, subido: int, total: int) -> None:
+    """Llama al callback de progreso, sea síncrono o asíncrono."""
+    if callback:
+        resultado = callback(subido, total)
+        if inspect.isawaitable(resultado):
+            await resultado
+
+
+async def esperar_o_cancelar(tareas: list) -> None:
+    """Espera todas las tareas; si una falla, cancela las demás para que no sigan en segundo plano."""
+    try:
+        await asyncio.gather(*tareas)
+    except BaseException:
+        for tarea in tareas:
+            tarea.cancel()
+        await asyncio.gather(*tareas, return_exceptions=True)
+        raise
+
+
+async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int,
+                               progress_callback=None, estado: EstadoSubida | None = None):
     file_size = await asyncio.to_thread(tamano_archivo, ruta)
     if file_size <= UMBRAL_ARCHIVO_GRANDE or chunks_paralelos <= 1:
         return await client.upload_file(str(ruta), part_size_kb=512, progress_callback=progress_callback)
 
     part_size = 512 * 1024
     part_count = (file_size + part_size - 1) // part_size
-    file_id = helpers.generate_random_long()
+    estado = preparar_estado(estado, part_count)
+
+    pendientes = [i for i in range(part_count) if i not in estado.completadas]
+    subido = bytes_subidos(estado.completadas, part_size, file_size)
 
     semaforo = asyncio.Semaphore(max(1, chunks_paralelos))
-    subido = 0
     lock = asyncio.Lock()
 
     async def subir_parte(idx):
@@ -72,19 +126,21 @@ async def upload_file_paralelo(client, ruta: Path, chunks_paralelos: int, progre
         async with semaforo:
             parte = await asyncio.to_thread(leer_parte, ruta, idx * part_size, part_size)
 
-            ok = await client(SaveBigFilePartRequest(file_id, idx, part_count, parte))
+            ok = await client(SaveBigFilePartRequest(estado.file_id, idx, part_count, parte))
             if not ok:
                 raise RuntimeError(f"Telegram rechazó la parte {idx}/{part_count}")
 
-            if progress_callback:
-                async with lock:
-                    subido += len(parte)
-                    resultado = progress_callback(subido, file_size)
-                    if inspect.isawaitable(resultado):
-                        await resultado
+            estado.completadas.add(idx)
+            async with lock:
+                subido += len(parte)
+                await avisar_progreso(progress_callback, subido, file_size)
 
-    await asyncio.gather(*(subir_parte(i) for i in range(part_count)))
-    return InputFileBig(file_id, part_count, ruta.name)
+    if subido:
+        # Al reanudar, la barra de progreso arranca en lo que ya estaba subido.
+        await avisar_progreso(progress_callback, subido, file_size)
+
+    await esperar_o_cancelar([asyncio.ensure_future(subir_parte(i)) for i in pendientes])
+    return InputFileBig(estado.file_id, part_count, ruta.name)
 
 
 @dataclass(frozen=True)
@@ -167,9 +223,11 @@ async def enviar_con_reintentos(ctx: ContextoSubida, opciones: OpcionesSubida, r
     """
     intentos_flood = 0
     intentos_error = 0
+    estado = EstadoSubida()  # se reutiliza entre reintentos del mismo archivo
     while True:
         try:
-            handle = await upload_file_paralelo(ctx.client, ruta, opciones.chunks_paralelos, progreso)
+            handle = await upload_file_paralelo(
+                ctx.client, ruta, opciones.chunks_paralelos, progreso, estado)
             await ctx.client.send_file(
                 ctx.destino,
                 file=handle,
@@ -188,6 +246,8 @@ async def enviar_con_reintentos(ctx: ContextoSubida, opciones: OpcionesSubida, r
             log.warning(t("warn_flood_wait", segundos=e.seconds))
             await asyncio.sleep(e.seconds + 1)
         except (RPCError, ConnectionError, OSError) as e:
+            if isinstance(e, FilePartMissingError):
+                estado = EstadoSubida()  # los fragmentos caducaron en Telegram: se empieza de cero
             intentos_error += 1
             if intentos_error > MAX_REINTENTOS_ERROR:
                 log.error(t("err_persistent", nombre=ruta.name, error=e))
