@@ -1,7 +1,7 @@
 """Constantes y valores por defecto. No depende de ningún otro módulo del paquete."""
 from pathlib import Path
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 
 # Carpeta del proyecto (la que contiene subir_a_telegram.py), no la del paquete.
 # Ahí se guardan config.json, la sesión de Telegram y el registro de subidos.

@@ -2,6 +2,16 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.3.1] - 2026-11-13
+
+### Añadido
+- Opción `--limite N`: permite subir como máximo N archivos pendientes en una ejecución.
+- Validación de que `--limite` sea al menos 1, lanzando un `ErrorDeUso` controlado.
+- Mensajes informativos y de error adaptados en español e inglés para el límite de archivos.
+
+### Cambiado
+- Refactorización de la arquitectura de CLI y servicios: la lógica principal de búsqueda y ejecución de subidas se delegó al módulo `servicio`.
+
 ## [1.3.0] - 2026-11-12
 
 ### Añadido
