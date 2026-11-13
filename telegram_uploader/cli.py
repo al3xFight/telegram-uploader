@@ -28,13 +28,10 @@ from .consola import console, log
 from .constantes import VERSION
 from .errores import ErrorDeUso
 from .i18n import elegir_idioma_interactivo, t, traductor
-from .medios import FFMPEG_DISPONIBLE, encontrar_archivos, obtener_timestamp_orden
-from .registro import cargar_registro, clave_archivo
+from .medios import FFMPEG_DISPONIBLE
+from .servicio import Solicitud, ejecutar_servicio
 from .subida import (
     OpcionesSubida,
-    crear_cliente,
-    ejecutar_subidas,
-    resolver_destino,
 )
 
 
@@ -140,14 +137,6 @@ def obtener_carpeta(ruta_indicada) -> Path:
         ruta_carpeta = input(f"{t('prompt_carpeta')}: ").strip().strip('"').strip("'")
     return validar_carpeta(ruta_carpeta)
 
-
-def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
-    """Devuelve (todos_los_archivos, pendientes), ambos en orden cronológico."""
-    archivos = list(encontrar_archivos(carpeta, solo_videos=solo_videos))
-    archivos.sort(key=obtener_timestamp_orden)
-    pendientes = [a for a in archivos if clave_archivo(a) not in registro]
-    return archivos, pendientes
-
 class ReporteRich(ReporteProgreso):
     """Barra de progreso de la consola (rich)."""
 
@@ -206,26 +195,17 @@ async def flujo_principal():
     config = asegurar_configuracion(config)
     api_id, api_hash, canal, opciones = resolver_ajustes(args, config)
     mostrar_avisos(args)
+
     carpeta = obtener_carpeta(args.carpeta)
-
-    registro = cargar_registro()
-    archivos, pendientes = buscar_pendientes(carpeta, solo_videos=not args.todo, registro=registro)
-    log.info(t("log_found_files", n=len(archivos)))
-    log.info(t("log_pending_files", n=len(pendientes)))
-    if not pendientes:
-        log.info(t("log_nothing_new"))
-        return
-
-    client = crear_cliente(api_id, api_hash)
-    try:
-        await client.start()
-        destino = await resolver_destino(client, canal)
-        subidos_ok = await ejecutar_subidas(client, destino, pendientes, registro, opciones, ReporteRich())
-        log.info(t("log_finished", ok=subidos_ok, total=len(pendientes)))
-    except KeyboardInterrupt:
-        log.warning(t("log_interrupted"))
-    finally:
-        await client.disconnect()
+    solicitud = Solicitud(
+        api_id=api_id,
+        api_hash=api_hash,
+        canal=canal,
+        carpeta=carpeta,
+        solo_videos=not args.todo,
+        opciones=opciones,
+    )
+    await ejecutar_servicio(solicitud, ReporteRich())
 
 async def main():
     """Ejecuta el flujo y convierte los errores de uso en un mensaje y código de salida 1."""

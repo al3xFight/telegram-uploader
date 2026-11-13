@@ -24,7 +24,8 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/registro.py` | `subidos.json` (evita duplicados) y `clave_archivo()`. |
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, avance mediante ReporteProgreso, Incluye ReporteRich, la barra de progreso de la consola. |
-| `telegram_uploader/cli.py` | Argumentos, validación y flujo de `main()`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Es el único que conoce a todos. |
+| `telegram_uploader/servicio.py` | Flujo completo de subida (`ejecutar_servicio`): busca pendientes, inicia sesión, sube y devuelve un `ResultadoSubida`. Recibe una `Solicitud`, un `ReporteProgreso` y, opcionalmente, `CallbacksLogin` (teléfono, código y contraseña de 2FA). Lo usan la línea de comandos y la futura interfaz gráfica. |
+| `telegram_uploader/cli.py` | Argumentos, validación y preparación de la `Solicitud`; llama a `servicio.ejecutar_servicio`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Incluye `ReporteRich`, la barra de progreso de la consola. Es el único que conoce a todos. |
 | `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
 
@@ -39,6 +40,13 @@ flowchart TD
     cli --> errores
     cli --> constantes
     cli --> progreso
+    cli --> servicio
+    servicio --> subida
+    servicio --> medios
+    servicio --> registro
+    servicio --> progreso
+    servicio --> i18n
+    servicio --> consola
     config --> i18n
     subida --> medios
     subida --> registro
@@ -55,7 +63,7 @@ flowchart TD
     medios --> constantes
 ```
 
-## 3. Flujo de `main()` (en `cli.py`)
+## 3. Flujo de ejecución
 
 ```mermaid
 flowchart TD
@@ -65,10 +73,11 @@ flowchart TD
     C -- No --> D[asegurar_configuracion]
     D --> E[resolver_ajustes: valida y crea OpcionesSubida]
     E --> F[obtener_carpeta]
-    F --> G[buscar_pendientes: filtra con el registro]
+    F --> S[servicio.ejecutar_servicio]
+    S --> G[buscar_pendientes: filtra con el registro]
     G --> H{¿hay pendientes?}
     H -- No --> Z[fin]
-    H -- Sí --> I[crear_cliente y conectar]
+    H -- Sí --> I[crear_cliente e iniciar sesión]
     I --> J[resolver_destino]
     J --> K[ejecutar_subidas]
     K --> L[subir_archivo por cada pendiente]
@@ -114,7 +123,7 @@ Una prueba comprueba que ambos idiomas tengan las mismas claves.
 | Una **opción de línea de comandos** | `cli.py` (`construir_parser` y, si hace falta, `resolver_ajustes`), `i18n.py` (texto de ayuda en es y en), `constantes.py` si tiene valor por defecto |
 | Un **ajuste guardado en la configuración** | `constantes.py` (`CONFIG_DEFAULTS`), `config.py` (asistente y menú), `i18n.py` (etiquetas), `cli.resolver_ajustes` (usarlo) |
 | Un **cambio en cómo se sube** un archivo | `subida.py`; si es un ajuste nuevo, un campo en `OpcionesSubida` |
-| Un **criterio de filtro u orden** nuevo | `medios.py` y `cli.buscar_pendientes` |
+| Un **criterio de filtro u orden** nuevo | `medios.py` y `servicio.buscar_pendientes` |
 | Un **mensaje o idioma** nuevo | `i18n.py` |
 | Algo que se **recuerde entre ejecuciones** | `registro.py` |
 
