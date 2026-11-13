@@ -1,7 +1,7 @@
 """Pruebas directas de las funciones extraídas de main()."""
 from types import SimpleNamespace
 
-from telegram_uploader import cli, constantes, i18n, registro
+from telegram_uploader import cli, constantes, i18n, registro, servicio
 
 
 def _args(**kwargs):
@@ -33,7 +33,7 @@ def test_buscar_pendientes_excluye_los_ya_registrados(tmp_path):
     viejo.write_text("b")
     ya_subidos = {registro.clave_archivo(viejo): {"nombre": "viejo.txt"}}
 
-    archivos, pendientes = cli.buscar_pendientes(tmp_path, solo_videos=False, registro=ya_subidos)
+    archivos, pendientes = servicio.buscar_pendientes(tmp_path, solo_videos=False, registro=ya_subidos)
 
     assert len(archivos) == 2
     assert [p.name for p in pendientes] == ["nuevo.txt"]

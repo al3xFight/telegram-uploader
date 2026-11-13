@@ -79,6 +79,7 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 | R11 | El inicio de sesión de la GUI expone el código o la contraseña de 2FA | 1 | 3 | 3 | Mitigar | Campos ocultos; no guardar ni registrar esos valores | Aparecen en logs o archivos |
 | R12 | Un antivirus marca el `.exe` como sospechoso | 2 | 2 | 4 | Mitigar | Publicar el hash SHA-256 y la forma de ejecutar desde el código fuente | Reportes de usuarios |
 | R13 | La GUI crece sin control | 2 | 2 | 4 | Mitigar | Versión base mínima; todo lo demás pasa por solicitud de cambio | Aparecen pedidos fuera de la versión base |
+| #20 | Separar la lógica de la consola (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
 
 **Priorización:** atender primero R1, R3, R6 y R10 (exposición 6).
 **Revisión:** se revisa este registro al cerrar cada versión nueva.
@@ -182,7 +183,9 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Hecho | 1.2.0 | Reestructuración: paquete modular, pruebas, análisis estático, CI, documentación y plan del proyecto | Completada |
 | Hecho | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo en hilos, `subir_archivo` dividida, `menu_configuracion` con tabla de opciones y `ruff` bloqueante en la integración continua | Completada |
 | Hecho | 1.3.0 | Reanudar subidas por fragmentos dentro de la misma ejecución | Completada |
-| Siguiente | 1.4.0 | Opción `--limite N` | Planificada |
+| Hecho | 1.3.1 | Separación de la lógica y la consola: servicio con progreso y login por funciones, sin cambio visible | Completada |
+| Siguiente | 1.4.0 | Interfaz gráfica de escritorio con Flet (#9) | Planificada |
+| Después | 1.5.0 | Opción `--limite N` | Planificada |
 | Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
 ## 11. Plan de iteraciones
@@ -196,6 +199,9 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 | 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos | Completado |
 | 4 | Reanudar subidas por fragmentos (misma ejecución) | Versión 1.3.0 | Completado |
 | 5 | Opción `--limite N` | Versión 1.4.0 | Planificado |
+| 5 | Separar la lógica de la consola (#20) | Versión 1.3.1 | Completado |
+| 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | En curso |
+| 7 | Opción `--limite N` | Versión 1.5.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
 

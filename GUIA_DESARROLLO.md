@@ -103,19 +103,19 @@ parser.add_argument("--limite", type=int, default=None, metavar="N", help=t("arg
 
 ```python
 if args.limite is not None and args.limite < 1:
-    console.print(f"[red]{t('err_limite_min1')}[/red]")
-    sys.exit(1)
+    raise ErrorDeUso("err_limite_min1")
 ```
 Y en `test/test_funciones_nuevas.py`, función `_args`, agrega `limite=None` al
 diccionario `base` (si no, `resolver_ajustes` falla con `AttributeError`).
 
-### 4.5 Lógica (`main`, justo después de los `log.info` de archivos encontrados/pendientes)
+### 4.5 Lógica (`servicio.ejecutar_servicio`, justo después de los `log.info` de archivos encontrados/pendientes)
 
 ```python
-if args.limite is not None:
-    pendientes = pendientes[:args.limite]
-    log.info(t("log_limit_applied", n=args.limite))
+if solicitud.limite is not None:
+    pendientes = pendientes[:solicitud.limite]
+    log.info(t("log_limit_applied", n=solicitud.limite))
 ```
+Hay que agregar el campo limite: int | None = None a Solicitud (en servicio.py) y pasarlo desde cli.main con limite=args.limite.
 Debe ir **antes** de `if not pendientes:` y de crear el cliente, para que el total
 de `log_finished` sea el real.
 

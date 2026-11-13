@@ -4,27 +4,17 @@ import contextlib
 import inspect
 import mimetypes
 import random
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from rich.progress import (
-    BarColumn,
-    DownloadColumn,
-    Progress,
-    TaskProgressColumn,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
-)
 from telethon import TelegramClient, helpers
 from telethon.errors import FilePartMissingError, FloodWaitError, RPCError
 from telethon.tl.functions.upload import SaveBigFilePartRequest
 from telethon.tl.types import DocumentAttributeVideo, InputFileBig
+from .progreso import ReporteProgreso
 
-from .consola import console, log
+from .consola import log
 from .constantes import (
     EXTENSIONES_VIDEO,
     MAX_REINTENTOS_ERROR,
@@ -32,6 +22,7 @@ from .constantes import (
     SESSION_NAME,
     UMBRAL_ARCHIVO_GRANDE,
 )
+from .errores import ErrorDeUso
 from .i18n import t
 from .medios import generar_miniatura, obtener_atributos_video
 from .registro import clave_archivo, guardar_registro
@@ -163,8 +154,7 @@ class ContextoSubida:
     client: Any
     destino: Any
     semaforo: asyncio.Semaphore
-    progress: Progress
-    task_global_id: Any = None
+    reporte: ReporteProgreso
 
 
 @dataclass(frozen=True)
@@ -202,7 +192,7 @@ def crear_callback_progreso(ctx: ContextoSubida, task_id):
     def progreso(actual, total):
         nonlocal ultimo_progreso
         if actual - ultimo_progreso > 0:
-            ctx.progress.update(task_id, completed=actual)
+            ctx.reporte.actualizar_archivo(task_id, actual)
             ultimo_progreso = actual
 
     return progreso
@@ -211,8 +201,7 @@ def crear_callback_progreso(ctx: ContextoSubida, task_id):
 def simular_subida(ctx: ContextoSubida) -> bool:
     """Modo --dry-run: no sube nada, solo avanza la barra global."""
     log.info(t("dry_run_note"))
-    if ctx.task_global_id is not None:
-        ctx.progress.advance(ctx.task_global_id, 1)
+    ctx.reporte.avanzar_total()
     return True
 
 
@@ -265,8 +254,7 @@ async def enviar_con_reintentos(ctx: ContextoSubida, opciones: OpcionesSubida, r
 
 async def finalizar_subida(ctx: ContextoSubida, opciones: OpcionesSubida, ruta: Path):
     """Tras una subida confirmada: avanza la barra, borra el local si se pidió y espera."""
-    if ctx.task_global_id is not None:
-        ctx.progress.advance(ctx.task_global_id, 1)
+    ctx.reporte.avanzar_total()
 
     log.info(t("log_done", nombre=ruta.name))
 
@@ -289,14 +277,14 @@ async def subir_archivo(ctx: ContextoSubida, opciones: OpcionesSubida, ruta: Pat
         if opciones.dry_run:
             return simular_subida(ctx)
 
-        task_id = ctx.progress.add_task(f"🎬 {ruta.name[:25].ljust(25)}", total=tamano_bytes)
+        task_id = ctx.reporte.iniciar_archivo(ruta.name, tamano_bytes)
         meta = preparar_medios(ruta)
         progreso = crear_callback_progreso(ctx, task_id)
 
         try:
             exito = await enviar_con_reintentos(ctx, opciones, ruta, meta, progreso)
         finally:
-            ctx.progress.remove_task(task_id)
+            ctx.reporte.terminar_archivo(task_id)
             if meta.miniatura:
                 with contextlib.suppress(OSError):
                     meta.miniatura.unlink(missing_ok=True)
@@ -320,43 +308,27 @@ def crear_cliente(api_id: int, api_hash: str):
 
 
 async def resolver_destino(client, canal):
-    """Busca el canal de destino; si no existe, informa y termina."""
+    """Busca el canal de destino; lanza ErrorDeUso si no existe."""
     try:
         return await client.get_entity(resolver_canal(canal))
     except (ValueError, RPCError) as e:
-        console.print(f"[red]{t('err_channel_not_found', canal=canal, error=e)}[/red]")
-        console.print(t("hint_check_channel"))
-        console.print(t("hint_fix_config"))
-        sys.exit(1)
+        raise ErrorDeUso("err_channel_not_found", canal=canal, error=e,
+                         pistas=("hint_check_channel", "hint_fix_config")) from e
 
 
-def crear_barra_progreso() -> Progress:
-    return Progress(
-        TextColumn("[bold blue]{task.description}"),
-        BarColumn(bar_width=None),
-        TaskProgressColumn(),
-        DownloadColumn(),
-        TransferSpeedColumn(),
-        TextColumn("[dim]Elapsed:[/dim]"),
-        TimeElapsedColumn(),
-        TextColumn("[dim]ETA:[/dim]"),
-        TimeRemainingColumn(),
-        transient=False,
-        refresh_per_second=10,
-    )
 
 
-async def ejecutar_subidas(client, destino, pendientes: list, registro: dict,
-                           opciones: OpcionesSubida) -> int:
+
+async def ejecutar_subidas(client, destino, pendientes: list, registro: dict,  # noqa: PLR0913, PLR0917
+                           opciones: OpcionesSubida, reporte: ReporteProgreso) -> int:
     """Sube todos los pendientes y registra los exitosos. Devuelve cuántos se subieron."""
     semaforo = asyncio.Semaphore(max(1, opciones.archivos_simultaneos))
     lock_registro = asyncio.Lock()
     subidos_ok = 0
-    progress = crear_barra_progreso()
 
-    with progress:
-        task_global_id = progress.add_task(t("progress_total_label"), total=len(pendientes))
-        ctx = ContextoSubida(client, destino, semaforo, progress, task_global_id)
+    with reporte:
+        reporte.iniciar_total(len(pendientes))
+        ctx = ContextoSubida(client, destino, semaforo, reporte)
 
         async def procesar(ruta):
             nonlocal subidos_ok

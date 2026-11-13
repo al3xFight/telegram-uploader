@@ -6,6 +6,17 @@ import sys
 from pathlib import Path
 
 from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
+from .progreso import ReporteProgreso
 
 from .config import (
     asegurar_configuracion,
@@ -15,14 +26,12 @@ from .config import (
 )
 from .consola import console, log
 from .constantes import VERSION
+from .errores import ErrorDeUso
 from .i18n import elegir_idioma_interactivo, t, traductor
-from .medios import FFMPEG_DISPONIBLE, encontrar_archivos, obtener_timestamp_orden
-from .registro import cargar_registro, clave_archivo
+from .medios import FFMPEG_DISPONIBLE
+from .servicio import Solicitud, ejecutar_servicio
 from .subida import (
     OpcionesSubida,
-    crear_cliente,
-    ejecutar_subidas,
-    resolver_destino,
 )
 
 
@@ -71,26 +80,23 @@ def mostrar_banner() -> None:
 
 
 def resolver_ajustes(args, config: dict):
-    """Combina configuración guardada y argumentos; valida y termina si algo es inválido.
+    """Combina configuración guardada y argumentos; lanza ErrorDeUso si algo es inválido.
 
     Devuelve (api_id, api_hash, canal, opciones).
     """
     try:
         api_id = int(config["api_id"])
     except (TypeError, ValueError):
-        console.print(f"[red]{t('err_api_id_invalid_saved')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_api_id_invalid_saved") from None
 
     chunks_paralelos = args.chunks_paralelos if args.chunks_paralelos is not None else int(config["chunks_paralelos"])
     pausa_min = args.pausa_min if args.pausa_min is not None else float(config["pausa_min"])
     pausa_max = args.pausa_max if args.pausa_max is not None else float(config["pausa_max"])
 
     if chunks_paralelos < 1:
-        console.print(f"[red]{t('err_chunks_min1')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_chunks_min1")
     if pausa_min < 0 or pausa_max < 0:
-        console.print(f"[red]{t('err_pausas_negative')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_pausas_negative")
     if pausa_max > 0 and pausa_min > pausa_max:
         pausa_min, pausa_max = pausa_max, pausa_min
 
@@ -116,28 +122,64 @@ def mostrar_avisos(args) -> None:
         log.warning(t("warn_ffmpeg_missing"))
 
 
+def validar_carpeta(ruta) -> Path:
+    """Comprueba que la carpeta exista; lanza ErrorDeUso si no."""
+    carpeta = Path(ruta).expanduser()
+    if not carpeta.is_dir():
+        raise ErrorDeUso("err_carpeta_not_found", carpeta=carpeta)
+    return carpeta
+
+
 def obtener_carpeta(ruta_indicada) -> Path:
     """Pide la carpeta por consola si no se indicó, y comprueba que exista."""
     ruta_carpeta = ruta_indicada
     while not ruta_carpeta:
         ruta_carpeta = input(f"{t('prompt_carpeta')}: ").strip().strip('"').strip("'")
+    return validar_carpeta(ruta_carpeta)
 
-    carpeta = Path(ruta_carpeta).expanduser()
-    if not carpeta.is_dir():
-        console.print(f"[red]{t('err_carpeta_not_found', carpeta=carpeta)}[/red]")
-        sys.exit(1)
-    return carpeta
+class ReporteRich(ReporteProgreso):
+    """Barra de progreso de la consola (rich)."""
 
+    def __init__(self):
+        self._progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(bar_width=None),
+            TaskProgressColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TextColumn("[dim]Elapsed:[/dim]"),
+            TimeElapsedColumn(),
+            TextColumn("[dim]ETA:[/dim]"),
+            TimeRemainingColumn(),
+            transient=False,
+            refresh_per_second=10,
+        )
+        self._id_total = None
 
-def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
-    """Devuelve (todos_los_archivos, pendientes), ambos en orden cronológico."""
-    archivos = list(encontrar_archivos(carpeta, solo_videos=solo_videos))
-    archivos.sort(key=obtener_timestamp_orden)
-    pendientes = [a for a in archivos if clave_archivo(a) not in registro]
-    return archivos, pendientes
+    def __enter__(self):
+        self._progress.__enter__()
+        return self
 
+    def __exit__(self, *excepcion):
+        return self._progress.__exit__(*excepcion)
 
-async def main():
+    def iniciar_total(self, total):
+        self._id_total = self._progress.add_task(t("progress_total_label"), total=total)
+
+    def iniciar_archivo(self, nombre, total_bytes):
+        return self._progress.add_task(f"🎬 {nombre[:25].ljust(25)}", total=total_bytes)
+
+    def actualizar_archivo(self, id_tarea, bytes_hechos):
+        self._progress.update(id_tarea, completed=bytes_hechos)
+
+    def terminar_archivo(self, id_tarea):
+        self._progress.remove_task(id_tarea)
+
+    def avanzar_total(self):
+        if self._id_total is not None:
+            self._progress.advance(self._id_total, 1)
+
+async def flujo_principal():
     config = cargar_config()
     configurar_idioma(config, sys.argv)
     mostrar_banner()
@@ -153,27 +195,27 @@ async def main():
     config = asegurar_configuracion(config)
     api_id, api_hash, canal, opciones = resolver_ajustes(args, config)
     mostrar_avisos(args)
+
     carpeta = obtener_carpeta(args.carpeta)
+    solicitud = Solicitud(
+        api_id=api_id,
+        api_hash=api_hash,
+        canal=canal,
+        carpeta=carpeta,
+        solo_videos=not args.todo,
+        opciones=opciones,
+    )
+    await ejecutar_servicio(solicitud, ReporteRich())
 
-    registro = cargar_registro()
-    archivos, pendientes = buscar_pendientes(carpeta, solo_videos=not args.todo, registro=registro)
-    log.info(t("log_found_files", n=len(archivos)))
-    log.info(t("log_pending_files", n=len(pendientes)))
-    if not pendientes:
-        log.info(t("log_nothing_new"))
-        return
-
-    client = crear_cliente(api_id, api_hash)
+async def main():
+    """Ejecuta el flujo y convierte los errores de uso en un mensaje y código de salida 1."""
     try:
-        await client.start()
-        destino = await resolver_destino(client, canal)
-        subidos_ok = await ejecutar_subidas(client, destino, pendientes, registro, opciones)
-        log.info(t("log_finished", ok=subidos_ok, total=len(pendientes)))
-    except KeyboardInterrupt:
-        log.warning(t("log_interrupted"))
-    finally:
-        await client.disconnect()
-
+        await flujo_principal()
+    except ErrorDeUso as e:
+        console.print(f"[red]{t(e.clave, **e.datos)}[/red]")
+        for pista in e.pistas:
+            console.print(t(pista))
+        sys.exit(1)
 
 def ejecutar() -> None:
     """Punto de entrada: lanza el programa principal."""
