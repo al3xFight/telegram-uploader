@@ -4,7 +4,6 @@ import contextlib
 import inspect
 import mimetypes
 import random
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -24,7 +23,7 @@ from telethon.errors import FilePartMissingError, FloodWaitError, RPCError
 from telethon.tl.functions.upload import SaveBigFilePartRequest
 from telethon.tl.types import DocumentAttributeVideo, InputFileBig
 
-from .consola import console, log
+from .consola import log
 from .constantes import (
     EXTENSIONES_VIDEO,
     MAX_REINTENTOS_ERROR,
@@ -32,6 +31,7 @@ from .constantes import (
     SESSION_NAME,
     UMBRAL_ARCHIVO_GRANDE,
 )
+from .errores import ErrorDeUso
 from .i18n import t
 from .medios import generar_miniatura, obtener_atributos_video
 from .registro import clave_archivo, guardar_registro
@@ -320,14 +320,12 @@ def crear_cliente(api_id: int, api_hash: str):
 
 
 async def resolver_destino(client, canal):
-    """Busca el canal de destino; si no existe, informa y termina."""
+    """Busca el canal de destino; lanza ErrorDeUso si no existe."""
     try:
         return await client.get_entity(resolver_canal(canal))
     except (ValueError, RPCError) as e:
-        console.print(f"[red]{t('err_channel_not_found', canal=canal, error=e)}[/red]")
-        console.print(t("hint_check_channel"))
-        console.print(t("hint_fix_config"))
-        sys.exit(1)
+        raise ErrorDeUso("err_channel_not_found", canal=canal, error=e,
+                         pistas=("hint_check_channel", "hint_fix_config")) from e
 
 
 def crear_barra_progreso() -> Progress:

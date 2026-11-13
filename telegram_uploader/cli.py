@@ -114,17 +114,20 @@ def mostrar_avisos(args) -> None:
         log.warning(t("warn_ffmpeg_missing"))
 
 
+def validar_carpeta(ruta) -> Path:
+    """Comprueba que la carpeta exista; lanza ErrorDeUso si no."""
+    carpeta = Path(ruta).expanduser()
+    if not carpeta.is_dir():
+        raise ErrorDeUso("err_carpeta_not_found", carpeta=carpeta)
+    return carpeta
+
+
 def obtener_carpeta(ruta_indicada) -> Path:
     """Pide la carpeta por consola si no se indicó, y comprueba que exista."""
     ruta_carpeta = ruta_indicada
     while not ruta_carpeta:
         ruta_carpeta = input(f"{t('prompt_carpeta')}: ").strip().strip('"').strip("'")
-
-    carpeta = Path(ruta_carpeta).expanduser()
-    if not carpeta.is_dir():
-        console.print(f"[red]{t('err_carpeta_not_found', carpeta=carpeta)}[/red]")
-        sys.exit(1)
-    return carpeta
+    return validar_carpeta(ruta_carpeta)
 
 
 def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
@@ -178,6 +181,8 @@ async def main():
         await flujo_principal()
     except ErrorDeUso as e:
         console.print(f"[red]{t(e.clave, **e.datos)}[/red]")
+        for pista in e.pistas:
+            console.print(t(pista))
         sys.exit(1)
 
 def ejecutar() -> None:

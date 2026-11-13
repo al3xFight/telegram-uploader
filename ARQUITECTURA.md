@@ -17,7 +17,7 @@ ya subido y funciona en español e inglés.
 | `subir_a_telegram.py` | Lanzador de 15 líneas. Solo llama a `cli.ejecutar()`. |
 | `telegram_uploader/constantes.py` | Valores fijos, rutas y `CONFIG_DEFAULTS`. No importa nada del paquete. |
 | `telegram_uploader/consola.py` | `console` (rich) y `log`. No importa nada del paquete. |
-| `telegram_uploader/errores.py` | `ErrorDeUso`: excepción con la clave del texto y sus datos, que la lógica lanza en lugar de usar `sys.exit`; cada interfaz decide cómo mostrarla. No importa nada del paquete. |
+| `telegram_uploader/errores.py` | `ErrorDeUso`: excepción con la clave del texto, sus datos y claves de pistas de ayuda, que la lógica lanza en lugar de usar `sys.exit`; cada interfaz decide cómo mostrarla. No importa nada del paquete. |
 | `telegram_uploader/i18n.py` | Textos `STRINGS` (es/en), clase `Traductor`, función `t()`. |
 | `telegram_uploader/config.py` | Leer/guardar `config.json`, asistente, menú `--config`, enmascarar secretos. |
 | `telegram_uploader/registro.py` | `subidos.json` (evita duplicados) y `clave_archivo()`. |
@@ -41,6 +41,7 @@ flowchart TD
     subida --> medios
     subida --> registro
     subida --> i18n
+    subida --> errores
     i18n --> consola
     config --> consola
     registro --> consola
