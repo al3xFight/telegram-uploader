@@ -17,12 +17,13 @@ ya subido y funciona en español e inglés.
 | `subir_a_telegram.py` | Lanzador de 15 líneas. Solo llama a `cli.ejecutar()`. |
 | `telegram_uploader/constantes.py` | Valores fijos, rutas y `CONFIG_DEFAULTS`. No importa nada del paquete. |
 | `telegram_uploader/consola.py` | `console` (rich) y `log`. No importa nada del paquete. |
+| `telegram_uploader/errores.py` | `ErrorDeUso`: excepción con la clave del texto y sus datos, que la lógica lanza en lugar de usar `sys.exit`; cada interfaz decide cómo mostrarla. No importa nada del paquete. |
 | `telegram_uploader/i18n.py` | Textos `STRINGS` (es/en), clase `Traductor`, función `t()`. |
 | `telegram_uploader/config.py` | Leer/guardar `config.json`, asistente, menú `--config`, enmascarar secretos. |
 | `telegram_uploader/registro.py` | `subidos.json` (evita duplicados) y `clave_archivo()`. |
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, barra de progreso. |
-| `telegram_uploader/cli.py` | Argumentos, validación y flujo de `main()`. Es el único que conoce a todos. |
+| `telegram_uploader/cli.py` | Argumentos, validación y flujo de `main()`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Es el único que conoce a todos. |
 | `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
 
@@ -34,6 +35,8 @@ flowchart TD
     cli --> subida
     cli --> medios
     cli --> registro
+    cli --> errores
+    cli --> constantes
     config --> i18n
     subida --> medios
     subida --> registro
@@ -91,8 +94,9 @@ flowchart TD
    están en `.gitignore`. `api_hash` se muestra siempre con `enmascarar()`.
 4. **Configuración y registro se escriben de forma atómica** (archivo `.tmp` + `os.replace`).
 5. **Todo texto visible al usuario va en `STRINGS` con la misma clave en `es` y en `en`.**
-   Una prueba comprueba que ambos idiomas tengan las mismas claves.
-6. **Dependencias solo hacia abajo.** `constantes` y `consola` no importan nada del paquete.
+Una prueba comprueba que ambos idiomas tengan las mismas claves.
+
+6. **Dependencias solo hacia abajo.** `constantes`, `consola` y `errores` no importan nada del paquete.
 7. **No usar funciones privadas de Telethon** (las que empiezan con `_`): pueden romperse al actualizar.
 8. **No `except Exception: pass`.** Capturar excepciones concretas. La única excepción general está en
    `subir_archivo` y lleva un `# noqa` con su justificación.
@@ -140,5 +144,5 @@ Luego: copia los cambios, ejecuta `pytest` y `ruff`, y revisa el resultado antes
 ## 8. Limitaciones conocidas (trabajo futuro)
 
 - Las llamadas a `ffmpeg` (atributos y miniaturas de video) son síncronas y detienen el bucle asíncrono mientras se ejecutan. Las operaciones de archivo (tamaño, lectura de fragmentos y borrado local) ya se ejecutan en hilos con `asyncio.to_thread`.
-- `ruff` corre en la integración continua y bloquea la fusión si hay hallazgos.
+- `ruff` corre en la integración continua y hace fallar la ejecución si hay hallazgos. La fusión solo se impide si se activa la protección de rama en GitHub, que no está activada.
 - Las subidas solo se reanudan dentro de la misma ejecución. Si se cierra el programa, el archivo se sube desde cero: Telegram conserva los fragmentos subidos solo entre varios minutos y varias horas, por lo que reanudar entre ejecuciones únicamente serviría si se retoma pronto.

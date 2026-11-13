@@ -15,6 +15,7 @@ from .config import (
 )
 from .consola import console, log
 from .constantes import VERSION
+from .errores import ErrorDeUso
 from .i18n import elegir_idioma_interactivo, t, traductor
 from .medios import FFMPEG_DISPONIBLE, encontrar_archivos, obtener_timestamp_orden
 from .registro import cargar_registro, clave_archivo
@@ -71,26 +72,23 @@ def mostrar_banner() -> None:
 
 
 def resolver_ajustes(args, config: dict):
-    """Combina configuración guardada y argumentos; valida y termina si algo es inválido.
+    """Combina configuración guardada y argumentos; lanza ErrorDeUso si algo es inválido.
 
     Devuelve (api_id, api_hash, canal, opciones).
     """
     try:
         api_id = int(config["api_id"])
     except (TypeError, ValueError):
-        console.print(f"[red]{t('err_api_id_invalid_saved')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_api_id_invalid_saved") from None
 
     chunks_paralelos = args.chunks_paralelos if args.chunks_paralelos is not None else int(config["chunks_paralelos"])
     pausa_min = args.pausa_min if args.pausa_min is not None else float(config["pausa_min"])
     pausa_max = args.pausa_max if args.pausa_max is not None else float(config["pausa_max"])
 
     if chunks_paralelos < 1:
-        console.print(f"[red]{t('err_chunks_min1')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_chunks_min1")
     if pausa_min < 0 or pausa_max < 0:
-        console.print(f"[red]{t('err_pausas_negative')}[/red]")
-        sys.exit(1)
+        raise ErrorDeUso("err_pausas_negative")
     if pausa_max > 0 and pausa_min > pausa_max:
         pausa_min, pausa_max = pausa_max, pausa_min
 
@@ -137,7 +135,7 @@ def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
     return archivos, pendientes
 
 
-async def main():
+async def flujo_principal():
     config = cargar_config()
     configurar_idioma(config, sys.argv)
     mostrar_banner()
@@ -174,6 +172,13 @@ async def main():
     finally:
         await client.disconnect()
 
+async def main():
+    """Ejecuta el flujo y convierte los errores de uso en un mensaje y código de salida 1."""
+    try:
+        await flujo_principal()
+    except ErrorDeUso as e:
+        console.print(f"[red]{t(e.clave, **e.datos)}[/red]")
+        sys.exit(1)
 
 def ejecutar() -> None:
     """Punto de entrada: lanza el programa principal."""
