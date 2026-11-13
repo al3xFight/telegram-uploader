@@ -6,6 +6,17 @@ import sys
 from pathlib import Path
 
 from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
+from .progreso import ReporteProgreso
 
 from .config import (
     asegurar_configuracion,
@@ -137,6 +148,47 @@ def buscar_pendientes(carpeta: Path, solo_videos: bool, registro: dict):
     pendientes = [a for a in archivos if clave_archivo(a) not in registro]
     return archivos, pendientes
 
+class ReporteRich(ReporteProgreso):
+    """Barra de progreso de la consola (rich)."""
+
+    def __init__(self):
+        self._progress = Progress(
+            TextColumn("[bold blue]{task.description}"),
+            BarColumn(bar_width=None),
+            TaskProgressColumn(),
+            DownloadColumn(),
+            TransferSpeedColumn(),
+            TextColumn("[dim]Elapsed:[/dim]"),
+            TimeElapsedColumn(),
+            TextColumn("[dim]ETA:[/dim]"),
+            TimeRemainingColumn(),
+            transient=False,
+            refresh_per_second=10,
+        )
+        self._id_total = None
+
+    def __enter__(self):
+        self._progress.__enter__()
+        return self
+
+    def __exit__(self, *excepcion):
+        return self._progress.__exit__(*excepcion)
+
+    def iniciar_total(self, total):
+        self._id_total = self._progress.add_task(t("progress_total_label"), total=total)
+
+    def iniciar_archivo(self, nombre, total_bytes):
+        return self._progress.add_task(f"🎬 {nombre[:25].ljust(25)}", total=total_bytes)
+
+    def actualizar_archivo(self, id_tarea, bytes_hechos):
+        self._progress.update(id_tarea, completed=bytes_hechos)
+
+    def terminar_archivo(self, id_tarea):
+        self._progress.remove_task(id_tarea)
+
+    def avanzar_total(self):
+        if self._id_total is not None:
+            self._progress.advance(self._id_total, 1)
 
 async def flujo_principal():
     config = cargar_config()
@@ -168,7 +220,7 @@ async def flujo_principal():
     try:
         await client.start()
         destino = await resolver_destino(client, canal)
-        subidos_ok = await ejecutar_subidas(client, destino, pendientes, registro, opciones)
+        subidos_ok = await ejecutar_subidas(client, destino, pendientes, registro, opciones, ReporteRich())
         log.info(t("log_finished", ok=subidos_ok, total=len(pendientes)))
     except KeyboardInterrupt:
         log.warning(t("log_interrupted"))

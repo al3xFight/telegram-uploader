@@ -18,11 +18,12 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/constantes.py` | Valores fijos, rutas y `CONFIG_DEFAULTS`. No importa nada del paquete. |
 | `telegram_uploader/consola.py` | `console` (rich) y `log`. No importa nada del paquete. |
 | `telegram_uploader/errores.py` | `ErrorDeUso`: excepción con la clave del texto, sus datos y claves de pistas de ayuda, que la lógica lanza en lugar de usar `sys.exit`; cada interfaz decide cómo mostrarla. No importa nada del paquete. |
+| `telegram_uploader/progreso.py` | `ReporteProgreso`: interfaz con la que la lógica informa el avance (total, inicio, avance y fin de cada archivo). No hace nada por defecto; la consola, la GUI o las pruebas la implementan. No importa nada del paquete. |
 | `telegram_uploader/i18n.py` | Textos `STRINGS` (es/en), clase `Traductor`, función `t()`. |
 | `telegram_uploader/config.py` | Leer/guardar `config.json`, asistente, menú `--config`, enmascarar secretos. |
 | `telegram_uploader/registro.py` | `subidos.json` (evita duplicados) y `clave_archivo()`. |
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
-| `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, barra de progreso. |
+| `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, avance mediante ReporteProgreso, Incluye ReporteRich, la barra de progreso de la consola. |
 | `telegram_uploader/cli.py` | Argumentos, validación y flujo de `main()`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Es el único que conoce a todos. |
 | `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
@@ -37,11 +38,13 @@ flowchart TD
     cli --> registro
     cli --> errores
     cli --> constantes
+    cli --> progreso
     config --> i18n
     subida --> medios
     subida --> registro
     subida --> i18n
     subida --> errores
+    subida --> progreso
     i18n --> consola
     config --> consola
     registro --> consola
@@ -77,7 +80,7 @@ flowchart TD
 - **`OpcionesSubida`** (`subida.py`): ajustes que no cambian entre archivos (números e interruptores:
   `borrar_local`, `dry_run`, pausas, fragmentos, archivos simultáneos).
   *Si es un número o un interruptor, va aquí.*
-- **`ContextoSubida`** (`subida.py`): recursos vivos compartidos (cliente, destino, semáforo, barra de progreso).
+- **`ContextoSubida`** (`subida.py`): recursos vivos compartidos (cliente, destino, semáforo, reportero de progreso).
   *Si es un objeto que "hace cosas", va aquí.*
 - **`EstadoSubida`** (`subida.py`): avance de la subida por fragmentos de un archivo (`file_id` y fragmentos completados). Se crea una vez por archivo y se reutiliza entre reintentos, de modo que solo se reenvían los fragmentos que faltan.
 - **`Traductor` / `t(clave, **valores)`**: devuelve el texto en el idioma activo. El idioma se fija en
@@ -97,11 +100,12 @@ flowchart TD
 5. **Todo texto visible al usuario va en `STRINGS` con la misma clave en `es` y en `en`.**
 Una prueba comprueba que ambos idiomas tengan las mismas claves.
 
-6. **Dependencias solo hacia abajo.** `constantes`, `consola` y `errores` no importan nada del paquete.
+6. **Dependencias solo hacia abajo.** `constantes`, `consola`, `errores` y `progreso` no importan nada del paquete.
 7. **No usar funciones privadas de Telethon** (las que empiezan con `_`): pueden romperse al actualizar.
 8. **No `except Exception: pass`.** Capturar excepciones concretas. La única excepción general está en
    `subir_archivo` y lleva un `# noqa` con su justificación.
 9. **Reanudar no cambia lo que se envía.** El `file_id` solo se reutiliza mientras el archivo tenga el mismo número de fragmentos; si Telegram ya no conserva alguno, la subida se reinicia desde cero con un identificador nuevo.
+
 
 ## 6. Recetas: cómo agregar algo tocando lo mínimo
 
