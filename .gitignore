@@ -18,3 +18,8 @@ venv/
 
 # Archivo generado por herramientas/contexto.py
 contexto.txt
+
+# Salidas de empaquetado (flet pack / PyInstaller)
+dist/
+build/
+*.spec

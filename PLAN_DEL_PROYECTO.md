@@ -12,10 +12,10 @@ retoma la cola pendiente entre ejecuciones y está documentada.
 miniaturas, orden cronológico, registro de subidos, interfaz en español e inglés,
 simulación con `--dry-run`. 
 Asistente de configuración interactivo, reintentos y manejo de los límites de Telegram, y borrado opcional del archivo local tras una subida confirmada (`--borrar-local`).
+Interfaz gráfica de escritorio con Flet (versión base: configuración, inicio de sesión y subida con progreso), además de la línea de comandos.
 
 **No incluye (límites):**
 - Descargar archivos desde Telegram.
-- Interfaz gráfica.
 - Subir a varios destinos en una sola ejecución.
 - Usar bots (usa la cuenta del usuario).
 
@@ -37,20 +37,21 @@ Asistente de configuración interactivo, reintentos y manejo de los límites de 
 | #3 | Resolver los 8 hallazgos de ruff y hacer que bloquee en CI | deuda | alta | Cerrado |
 | #4 | Dividir subir_archivo (complejidad 18) | deuda | media | Cerrado |
 | #5 | Simplificar menu_configuracion con una tabla de opciones | deuda | media | Cerrado |
-| #6 | Reanudar subidas por fragmentos | funcion | baja | Pendiente |
+| #6 | Reanudar subidas por fragmentos (dentro de la misma ejecución) | funcion | baja | Cerrado |
 | #7 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | deuda | baja | Cerrado |
-| #9 | Interfaz grafica | funcion | baja | Pospuesta |
+| #9 | Interfaz grafica de escritorio (Flet) | funcion | alta | En curso |
 | #10 | Subir a varios canales o grupos en una misma ejecucion | funcion | baja | Pospuesta |
 | #11 | Soporte para grupos con temas (por verificar que la API lo permita) | funcion | baja | Pospuesta |
 | #12 | Operacion desde varios equipos (definir el manejo de la sesion de Telegram) | funcion | baja | Pospuesta |
 
-Los elementos B7 a B10 son ideas de evolución que quedan fuera del alcance actual (sección 2). Se crean sus Issues cuando se planteen con detalle, mediante el proceso de la sección 5.
+Los elementos #10 a #12 son ideas de evolución que quedan fuera del alcance actual (sección 2). Se crean sus Issues cuando se planteen con detalle, mediante el proceso de la sección 5.
 
 ### Solicitudes de cambio resueltas
 
 | Issue | Solicitud | Decisión | Motivo |
 |---|---|---|---|
-| #__ | Descargar los videos desde el canal | Rechazada | Fuera del alcance: la visión del producto es subir, no descargar |
+| #8 | Descargar los videos desde el canal | Rechazada | Fuera del alcance: la visión del producto es subir, no descargar |
+| #9 | Interfaz gráfica de escritorio | Aceptada con condiciones | Mejora la usabilidad; condiciones: separar antes la lógica de la consola y mantener la GUI como dependencia opcional |
 
 ## 5. Gestión de solicitudes de cambio
 1. Se registra la petición como un elemento nuevo del backlog (qué, por qué).
@@ -74,8 +75,12 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 | R7 | El proyecto depende de una sola persona | 2 | 2 | 4 | Mitigar | Documentación (`ARQUITECTURA.md`, guía, plan) y contexto generable para IA | Nadie más puede ejecutar o modificar el proyecto |
 | R8 | Falta `ffmpeg` y se pierden miniaturas y orden por metadata | 2 | 1 | 2 | Aceptar | Es opcional: el programa avisa y degrada con elegancia | Aviso de entorno al iniciar |
 | R9 | Telegram cambia sus reglas para cuentas de usuario o la API | 1 | 3 | 3 | Aceptar | Fuera de nuestro control; se vigila y se documenta | Cambios anunciados por Telegram o Telethon |
+| R10 | Flet cambia su API o falla entre versiones (ej.: `flet pack` roto en Windows con la 1.1.2) | 3 | 2 | 6 | Mitigar | Versión fijada con `==`; empaquetado en entorno aislado con corrección controlada y plan B con PyInstaller | `flet pack` o la GUI fallan tras actualizar |
+| R11 | El inicio de sesión de la GUI expone el código o la contraseña de 2FA | 1 | 3 | 3 | Mitigar | Campos ocultos; no guardar ni registrar esos valores | Aparecen en logs o archivos |
+| R12 | Un antivirus marca el `.exe` como sospechoso | 2 | 2 | 4 | Mitigar | Publicar el hash SHA-256 y la forma de ejecutar desde el código fuente | Reportes de usuarios |
+| R13 | La GUI crece sin control | 2 | 2 | 4 | Mitigar | Versión base mínima; todo lo demás pasa por solicitud de cambio | Aparecen pedidos fuera de la versión base |
 
-**Priorización:** atender primero R1, R3 y R6 (exposición 6).
+**Priorización:** atender primero R1, R3, R6 y R10 (exposición 6).
 **Revisión:** se revisa este registro al cerrar cada versión nueva.
 
 ## 7. Método de trabajo
