@@ -2,10 +2,7 @@
 
 ## 1. Visión del producto
 Para personas que necesitan respaldar videos y archivos grandes en un canal privado
-de Telegram, Telegram Uploader es una herramienta de línea de comandos que sube los
-archivos con la cuenta personal del usuario, sin duplicar lo ya enviado y sin incluir
-sus credenciales en el código ni en el repositorio. A diferencia de subir a mano, es repetible,
-retoma la cola pendiente entre ejecuciones y está documentada.
+de Telegram, Telegram Uploader es una herramienta de línea de comandos, con una interfaz gráfica de escritorio opcional que sube los archivos con la cuenta personal del usuario, sin duplicar lo ya enviado y sin incluir sus credenciales en el código ni en el repositorio. A diferencia de subir a mano, es repetible, retoma la cola pendiente entre ejecuciones y está documentada.
 
 ## 2. Alcance
 **Incluye:** subida a un canal o grupo privado, subida por fragmentos en paralelo,
@@ -39,7 +36,7 @@ Interfaz gráfica de escritorio con Flet (versión base: configuración, inicio 
 | #5 | Simplificar menu_configuracion con una tabla de opciones | deuda | media | Cerrado |
 | #6 | Reanudar subidas por fragmentos (dentro de la misma ejecución) | funcion | baja | Cerrado |
 | #7 | Evitar que operaciones de archivo bloqueen el bucle asíncrono | deuda | baja | Cerrado |
-| #9 | Interfaz grafica de escritorio (Flet) | funcion | alta | En curso |
+| #9 | Interfaz grafica de escritorio (Flet) | funcion | alta | Cerrado |
 | #10 | Subir a varios canales o grupos en una misma ejecucion | funcion | baja | Pospuesta |
 | #11 | Soporte para grupos con temas (por verificar que la API lo permita) | funcion | baja | Pospuesta |
 | #12 | Operacion desde varios equipos (definir el manejo de la sesion de Telegram) | funcion | baja | Pospuesta |
@@ -76,7 +73,7 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 | R8 | Falta `ffmpeg` y se pierden miniaturas y orden por metadata | 2 | 1 | 2 | Aceptar | Es opcional: el programa avisa y degrada con elegancia | Aviso de entorno al iniciar |
 | R9 | Telegram cambia sus reglas para cuentas de usuario o la API | 1 | 3 | 3 | Aceptar | Fuera de nuestro control; se vigila y se documenta | Cambios anunciados por Telegram o Telethon |
 | R10 | Flet cambia su API o falla entre versiones (ej.: `flet pack` roto en Windows con la 1.1.2) | 3 | 2 | 6 | Mitigar | Versión fijada con `==`; empaquetado en entorno aislado con corrección controlada y plan B con PyInstaller | `flet pack` o la GUI fallan tras actualizar |
-| R11 | El inicio de sesión de la GUI expone el código o la contraseña de 2FA | 1 | 3 | 3 | Mitigar | Campos ocultos; no guardar ni registrar esos valores | Aparecen en logs o archivos |
+| R11 | El inicio de sesión de la GUI expone el código o la contraseña de 2FA | 1 | 3 | 3 | Mitigar | Campos ocultos; PuenteLogin no guarda ni registra esos valores, con pruebas que lo comprueban | Aparecen en logs o archivos |
 | R12 | Un antivirus marca el `.exe` como sospechoso | 2 | 2 | 4 | Mitigar | Publicar el hash SHA-256 y la forma de ejecutar desde el código fuente | Reportes de usuarios |
 | R13 | La GUI crece sin control | 2 | 2 | 4 | Mitigar | Versión base mínima; todo lo demás pasa por solicitud de cambio | Aparecen pedidos fuera de la versión base |
 | #20 | Separar la lógica de la consola (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
@@ -129,9 +126,9 @@ El proyecto no requiere infraestructura en la nube propia: la nube es de tercero
 
 La instalación en Python 3.10 usa una versión anterior de `cryptg`, cuya licencia no se verificó.
 
-**Dependencias transitivas:** pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), markdown-it-py (MIT), mdurl (MIT), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT).
+**Dependencias transitivas** (medidas con `pip-licenses` en un entorno con `requirements-gui.txt`): pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), markdown-it-py (MIT), mdurl (MIT), anyio (MIT), certifi (MPL-2.0), h11 (MIT), httpcore (BSD-3-Clause), httpx (BSD), idna (BSD-3-Clause), msgpack (Apache-2.0), oauthlib (BSD-3-Clause), repath (MIT), six (MIT), typing_extensions (PSF-2.0), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT). Las que vienen solo con la interfaz gráfica son anyio, certifi, h11, httpcore, httpx, idna, msgpack, oauthlib, repath, six y typing_extensions.
 
-Todas las licencias son permisivas o de dominio público; ninguna es de copyleft, por lo que no imponen condiciones a la licencia del proyecto.
+Todas las licencias son permisivas o de dominio público, salvo `certifi` (MPL-2.0), que solo se instala con la interfaz gráfica. La MPL-2.0 es un copyleft débil, a nivel de archivo: obliga a conservar su aviso y a ofrecer el código de esos archivos si se modifican, pero no impone condiciones a la licencia del resto del proyecto. Se usa sin modificar. Al distribuir un ejecutable se incluirán los avisos de licencia de Flet (Apache-2.0) y de `certifi`.
 
 **Servicios:**
 
@@ -186,7 +183,8 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Hecho | 1.3.0 | Reanudar subidas por fragmentos dentro de la misma ejecución | Completada |
 | Hecho | 1.3.1 | Separación de la lógica y la consola: servicio con progreso y login por funciones, sin cambio visible | Completada |
 | Hecho | 1.3.2 | Actualización de `rich` a 15.0.0, requisito de la interfaz gráfica | Completada |
-| Siguiente | 1.4.0 | Interfaz gráfica de escritorio con Flet (#9) | Planificada |
+| Hecho | 1.4.0 | Interfaz gráfica de escritorio con Flet (configuración, inicio de sesión, subida con progreso) | Completada |
+| Siguiente | 1.4.1 | Ejecutable de Windows de la interfaz gráfica, con hash SHA-256 y avisos de licencia | Planificada |
 | Después | 1.5.0 | Opción `--limite N` | Planificada |
 | Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
@@ -203,7 +201,8 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 | 5 | Opción `--limite N` | Versión 1.4.0 | Planificado |
 | 5 | Separar la lógica de la consola (#20) | Versión 1.3.1 | Completado |
 | 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | En curso |
-| 7 | Opción `--limite N` | Versión 1.5.0 | Planificado |
+| 7 | Ejecutable de Windows de la interfaz gráfica | Versión 1.4.1 | Planificado |
+| 8 | Opción `--limite N` | Versión 1.5.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
 

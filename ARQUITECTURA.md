@@ -25,8 +25,8 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, avance mediante ReporteProgreso, Incluye ReporteRich, la barra de progreso de la consola. |
 | `telegram_uploader/servicio.py` | Flujo completo de subida (`ejecutar_servicio`): busca pendientes, inicia sesión, sube y devuelve un `ResultadoSubida`. Recibe una `Solicitud`, un `ReporteProgreso` y, opcionalmente, `CallbacksLogin` (teléfono, código y contraseña de 2FA). Lo usan la línea de comandos y la futura interfaz gráfica. |
-| `telegram_uploader/gui_modelo.py` | Lógica de la interfaz gráfica que no necesita pantalla: `ReporteEstado`, que guarda el avance de las subidas en datos simples y avisa a la pantalla. No importa Flet, por eso se prueba con pytest y en la integración continua. |
-| `telegram_uploader/gui.py` | Ventana de escritorio con Flet (por ahora, la pantalla de configuración). Es el único módulo que importa Flet; necesita `requirements-gui.txt`. |
+| `telegram_uploader/gui_modelo.py` | Lógica de la interfaz gráfica que no necesita pantalla: `ReporteEstado` (estado del progreso), `PuenteLogin` (entrega teléfono, código y 2FA a Telethon sin conservarlos), `validar_formulario`, `crear_solicitud` y `ManejadorEventos` (mensajes del registro). No importa Flet, por eso se prueba con pytest y en la integración continua. |
+| `telegram_uploader/gui.py` | Ventana de escritorio con Flet: pantallas de configuración y de subida, y diálogos de inicio de sesión. Solo dibuja; la lógica está en `gui_modelo.py`. Es el único módulo que importa Flet y necesita `requirements-gui.txt`. Se abre con `python -m telegram_uploader.gui`. |
 | `telegram_uploader/cli.py` | Argumentos, validación y preparación de la `Solicitud`; llama a `servicio.ejecutar_servicio`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Incluye `ReporteRich`, la barra de progreso de la consola. Es el único que conoce a todos. |
 | `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
@@ -36,33 +36,46 @@ ya subido y funciona en español e inglés.
 ```mermaid
 flowchart TD
     cli --> config
-    cli --> subida
-    cli --> medios
-    cli --> registro
-    cli --> errores
-    cli --> constantes
-    cli --> progreso
     cli --> servicio
+    cli --> medios
+    cli --> progreso
+    cli --> errores
+    cli --> i18n
+    cli --> consola
+    cli --> constantes
+    gui --> gui_modelo
+    gui --> servicio
+    gui --> config
+    gui --> registro
+    gui --> errores
+    gui --> i18n
+    gui --> consola
+    gui --> constantes
+    gui_modelo --> servicio
+    gui_modelo --> config
+    gui_modelo --> progreso
+    gui_modelo --> errores
     servicio --> subida
     servicio --> medios
     servicio --> registro
     servicio --> progreso
+    servicio --> errores
     servicio --> i18n
     servicio --> consola
-    config --> i18n
     subida --> medios
     subida --> registro
-    subida --> i18n
-    subida --> errores
     subida --> progreso
-    gui_modelo --> progreso
-    i18n --> consola
-    config --> consola
-    registro --> consola
-    medios --> consola
-    config --> constantes
-    registro --> constantes
+    subida --> errores
+    subida --> i18n
+    subida --> consola
     subida --> constantes
+    config --> i18n
+    config --> consola
+    config --> constantes
+    i18n --> consola
+    registro --> consola
+    registro --> constantes
+    medios --> consola
     medios --> constantes
 ```
 
@@ -117,6 +130,8 @@ Una prueba comprueba que ambos idiomas tengan las mismas claves.
 8. **No `except Exception: pass`.** Capturar excepciones concretas. La única excepción general está en
    `subir_archivo` y lleva un `# noqa` con su justificación.
 9. **Reanudar no cambia lo que se envía.** El `file_id` solo se reutiliza mientras el archivo tenga el mismo número de fragmentos; si Telegram ya no conserva alguno, la subida se reinicia desde cero con un identificador nuevo.
+10. **Solo `gui.py` importa Flet.** El resto del programa funciona sin él; una prueba lo comprueba.
+11. **El código de Telegram y la contraseña de 2FA nunca se guardan ni se registran.** `PuenteLogin` solo los entrega a Telethon; pruebas lo comprueban.
 
 
 ## 6. Recetas: cómo agregar algo tocando lo mínimo
@@ -163,3 +178,5 @@ Luego: copia los cambios, ejecuta `pytest` y `ruff`, y revisa el resultado antes
 - Las llamadas a `ffmpeg` (atributos y miniaturas de video) son síncronas y detienen el bucle asíncrono mientras se ejecutan. Las operaciones de archivo (tamaño, lectura de fragmentos y borrado local) ya se ejecutan en hilos con `asyncio.to_thread`.
 - `ruff` corre en la integración continua y hace fallar la ejecución si hay hallazgos. La fusión solo se impide si se activa la protección de rama en GitHub, que no está activada.
 - Las subidas solo se reanudan dentro de la misma ejecución. Si se cierra el programa, el archivo se sube desde cero: Telegram conserva los fragmentos subidos solo entre varios minutos y varias horas, por lo que reanudar entre ejecuciones únicamente serviría si se retoma pronto.
+- La capa visual (`gui.py`) no se prueba automáticamente: se verifica a mano con una lista de comprobaciones. La lógica que está detrás sí tiene pruebas.
+- Telethon escribe por consola, no por la ventana, sus avisos de dato incorrecto durante el inicio de sesión; la ventana solo vuelve a pedir el dato.

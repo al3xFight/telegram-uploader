@@ -160,6 +160,9 @@ imports circulares) → agrégalo a ARQUITECTURA.md (una prueba lo exige) → pr
 Lee primero las reglas no negociables de ARQUITECTURA.md: nunca borrar el archivo
 antes de confirmar la subida, nunca registrar un fallo como subido.
 
+**Nueva pantalla o control de la ventana**
+La lógica (validar, convertir, decidir) va en `gui_modelo.py` con su prueba primero. En `gui.py`, el único módulo que importa Flet, solo va el dibujo. Los textos `gui_*` van en español e inglés. La capa visual no tiene pruebas automáticas: se comprueba a mano abriendo la ventana.
+
 ## 6. Cómo pedirle un cambio a una IA (sin que se salte nada)
 
 Pasos:
@@ -200,6 +203,7 @@ Antes de escribir código, dime qué dudas tienes sobre el comportamiento.
 - [ ] ¿Puedo explicar cada línea sin mirar la respuesta? Si no, no se acepta.
 - [ ] ¿pytest en verde y ruff sin hallazgos nuevos?
 - [ ] ¿El cambio tiene un efecto visible para el usuario (un mensaje, una opción en `--help` o un dato en pantalla)? Si no lo tiene, justifica por qué.
+- [ ] Si el cambio toca gui.py: ¿abrí la ventana y repetí las comprobaciones (revisar carpeta, simulación, subida real de prueba y diálogos)?
 
 ## 8. Errores comunes
 - Inventar claves de texto o firmas que no existen.
@@ -207,3 +211,4 @@ Antes de escribir código, dime qué dudas tienes sobre el comportamiento.
 - Olvidar actualizar los helpers de las pruebas.
 - Olvidar la versión o el CHANGELOG (la prueba de documentación falla).
 - Mezclar varios cambios en un mismo commit.
+- Poner lógica dentro de gui.py: no se puede probar y rompe la regla de que solo ese módulo depende de Flet. y - Ejecutar ruff check --fix sin indicar carpetas: modifica referencia/ y test/. Usa siempre las carpetas explícitas.
