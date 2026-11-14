@@ -5,8 +5,10 @@ Solo `gui.py` dibuja la ventana.
 """
 from dataclasses import dataclass, field
 from functools import partial
+import math
 from typing import Callable
 
+from .errores import ErrorDeUso
 from .progreso import ReporteProgreso
 from .servicio import CallbacksLogin
 
@@ -85,3 +87,48 @@ class PuenteLogin:
             codigo=partial(self._pedir, "codigo"),
             contrasena=partial(self._pedir, "contrasena"),
         )
+
+def _texto_obligatorio(campos: dict, campo: str) -> str:
+    valor = str(campos.get(campo, "")).strip()
+    if not valor:
+        raise ErrorDeUso("err_required", campo=campo)
+    return valor
+
+
+def _entero(campos: dict, campo: str, clave_error: str = "err_invalid_number") -> int:
+    try:
+        return int(str(campos.get(campo, "")).strip())
+    except ValueError:
+        raise ErrorDeUso(clave_error, campo=campo) from None
+
+
+def _decimal(campos: dict, campo: str) -> float:
+    try:
+        valor = float(str(campos.get(campo, "")).strip())
+    except ValueError:
+        raise ErrorDeUso("err_invalid_number", campo=campo) from None
+    if not math.isfinite(valor):  # rechaza "nan" e "inf"
+        raise ErrorDeUso("err_invalid_number", campo=campo)
+    return valor
+
+
+def validar_formulario(campos: dict) -> dict:
+    """Convierte y valida lo escrito en el formulario de configuración.
+
+    Devuelve los valores con su tipo; lanza ErrorDeUso (con el nombre del campo en
+    `datos["campo"]`) si algo es inválido. El api_hash nunca aparece en un error.
+    """
+    api_id = _entero(campos, "api_id", "err_api_id_numeric")
+    api_hash = _texto_obligatorio(campos, "api_hash")
+    canal = _texto_obligatorio(campos, "canal")
+    chunks = _entero(campos, "chunks_paralelos")
+    if chunks < 1:
+        raise ErrorDeUso("err_chunks_min1", campo="chunks_paralelos")
+
+    pausas = {nombre: _decimal(campos, nombre) for nombre in ("pausa_min", "pausa_max")}
+    for nombre, valor in pausas.items():
+        if valor < 0:
+            raise ErrorDeUso("err_pausas_negative", campo=nombre)
+
+    return {"api_id": api_id, "api_hash": api_hash, "canal": canal,
+            "chunks_paralelos": chunks, **pausas}
