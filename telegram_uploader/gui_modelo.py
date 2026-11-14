@@ -9,9 +9,10 @@ import logging
 import math
 from typing import Callable
 
+from .config import config_incompleta
 from .errores import ErrorDeUso
 from .progreso import ReporteProgreso
-from .servicio import CallbacksLogin
+from .servicio import CallbacksLogin, Solicitud, resolver_ajustes, validar_carpeta
 
 
 @dataclass
@@ -143,3 +144,31 @@ class ManejadorEventos(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         self._al_mensaje(record.levelname, record.getMessage())
+
+@dataclass(frozen=True)
+class AjustesVentana:
+    """Lo que se elige en la pantalla de subida. Cumple lo que pide `resolver_ajustes`."""
+
+    solo_videos: bool = True
+    borrar_local: bool = False
+    dry_run: bool = False
+    paralelo: int = 1
+    chunks_paralelos: int | None = None  # None: usar la configuración guardada
+    pausa_min: float | None = None
+    pausa_max: float | None = None
+
+
+def necesita_confirmacion(ajustes: AjustesVentana) -> bool:
+    """Borrar archivos de verdad exige confirmación explícita; en simulación no."""
+    return ajustes.borrar_local and not ajustes.dry_run
+
+
+def crear_solicitud(config: dict, carpeta: str, ajustes: AjustesVentana) -> Solicitud:
+    """Arma la solicitud de subida con las mismas validaciones que la consola."""
+    if config_incompleta(config):
+        raise ErrorDeUso("gui_err_config_incompleta")
+    if not str(carpeta).strip():
+        raise ErrorDeUso("gui_err_sin_carpeta")
+    ruta = validar_carpeta(str(carpeta).strip())
+    api_id, api_hash, canal, opciones = resolver_ajustes(ajustes, config)
+    return Solicitud(api_id, api_hash, canal, ruta, ajustes.solo_videos, opciones)
