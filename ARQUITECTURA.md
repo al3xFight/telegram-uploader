@@ -25,6 +25,7 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, avance mediante ReporteProgreso, Incluye ReporteRich, la barra de progreso de la consola. |
 | `telegram_uploader/servicio.py` | Flujo completo de subida (`ejecutar_servicio`): busca pendientes, inicia sesión, sube y devuelve un `ResultadoSubida`. Recibe una `Solicitud`, un `ReporteProgreso` y, opcionalmente, `CallbacksLogin` (teléfono, código y contraseña de 2FA). Lo usan la línea de comandos y la futura interfaz gráfica. |
+| `telegram_uploader/gui_modelo.py` | Lógica de la interfaz gráfica que no necesita pantalla: `ReporteEstado`, que guarda el avance de las subidas en datos simples y avisa a la pantalla. No importa Flet, por eso se prueba con pytest y en la integración continua. |
 | `telegram_uploader/cli.py` | Argumentos, validación y preparación de la `Solicitud`; llama a `servicio.ejecutar_servicio`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Incluye `ReporteRich`, la barra de progreso de la consola. Es el único que conoce a todos. |
 | `test/` | Pruebas con `pytest` (cliente de Telegram simulado, nunca se conecta). |
 | `herramientas/contexto.py` | Genera el contexto para pegar a una IA. |
@@ -53,6 +54,7 @@ flowchart TD
     subida --> i18n
     subida --> errores
     subida --> progreso
+    gui_modelo --> progreso
     i18n --> consola
     config --> consola
     registro --> consola
