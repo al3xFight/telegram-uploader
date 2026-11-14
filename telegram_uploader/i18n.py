@@ -119,7 +119,14 @@ STRINGS = {
         "gui_confirm_borrar_body": "Cada archivo se eliminará de tu equipo después de subirse con éxito. Esta acción no se puede deshacer. Si tienes dudas, cancela y prueba antes con la simulación.",
         "gui_btn_cancelar": "Cancelar",
         "gui_btn_confirmar_borrar": "Sí, borrar",
-        "gui_label_eventos": "Eventos"
+        "gui_label_eventos": "Eventos",
+        "gui_login_title": "Inicio de sesión en Telegram",
+        "gui_login_telefono": "Número de teléfono con código de país (por ejemplo +584121234567)",
+        "gui_login_codigo": "Código que Telegram te envió",
+        "gui_login_contrasena": "Contraseña de verificación en dos pasos",
+        "gui_btn_aceptar": "Aceptar",
+        "gui_err_login_cancelado": "Inicio de sesión cancelado.",
+
     },
     "en": {
         "banner_subtitle": "Upload large videos and files to your private channel, using your own account.",
@@ -235,7 +242,13 @@ STRINGS = {
         "gui_confirm_borrar_body": "Each file will be deleted from your computer after it uploads successfully. This cannot be undone. If in doubt, cancel and try a dry run first.",
         "gui_btn_cancelar": "Cancel",
         "gui_btn_confirmar_borrar": "Yes, delete",
-        "gui_label_eventos": "Events"
+        "gui_label_eventos": "Events",
+        "gui_login_title": "Telegram sign-in",
+        "gui_login_telefono": "Phone number with country code (for example +15551234567)",
+        "gui_login_codigo": "The code Telegram sent you",
+        "gui_login_contrasena": "Two-step verification password",
+        "gui_btn_aceptar": "OK",
+        "gui_err_login_cancelado": "Sign-in cancelled.",
     },
 }
 
