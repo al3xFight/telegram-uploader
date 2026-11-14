@@ -5,6 +5,7 @@ Solo `gui.py` dibuja la ventana.
 """
 from dataclasses import dataclass, field
 from functools import partial
+import logging
 import math
 from typing import Callable
 
@@ -132,3 +133,13 @@ def validar_formulario(campos: dict) -> dict:
 
     return {"api_id": api_id, "api_hash": api_hash, "canal": canal,
             "chunks_paralelos": chunks, **pausas}
+
+class ManejadorEventos(logging.Handler):
+    """Entrega cada mensaje del registro (nivel y texto ya formateado) a la pantalla."""
+
+    def __init__(self, al_mensaje: Callable):
+        super().__init__()
+        self._al_mensaje = al_mensaje
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self._al_mensaje(record.levelname, record.getMessage())
