@@ -38,6 +38,12 @@ class EstadoProgreso:
     completados: int = 0
     archivos: dict = field(default_factory=dict)  # id de tarea -> TareaArchivo
 
+def fraccion_total(estado: EstadoProgreso) -> float:
+    """Avance global entre 0 y 1, para la barra de progreso total."""
+    if estado.total_archivos <= 0:
+        return 0.0
+    return min(1.0, estado.completados / estado.total_archivos)
+
 
 class ReporteEstado(ReporteProgreso):
     """Guarda el avance en datos simples y avisa a la pantalla cada vez que cambia."""

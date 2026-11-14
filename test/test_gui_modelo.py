@@ -1,5 +1,5 @@
 """Lógica de la interfaz gráfica que no necesita pantalla ni Flet."""
-from telegram_uploader.gui_modelo import ReporteEstado
+from telegram_uploader.gui_modelo import EstadoProgreso, ReporteEstado, fraccion_total
 
 
 def test_total_y_avance_global_avisan_a_la_pantalla():
@@ -40,3 +40,8 @@ def test_porcentaje_de_un_archivo_vacio_es_cero():
     reporte = ReporteEstado(lambda estado: None)
     tarea = reporte.iniciar_archivo("vacio.txt", 0)
     assert reporte.estado.archivos[tarea].porcentaje == 0.0
+
+def test_fraccion_total_es_el_avance_entre_cero_y_uno():
+    assert fraccion_total(EstadoProgreso(total_archivos=4, completados=1)) == 0.25
+    assert fraccion_total(EstadoProgreso()) == 0.0  # sin total no se divide entre cero
+    assert fraccion_total(EstadoProgreso(total_archivos=2, completados=5)) == 1.0

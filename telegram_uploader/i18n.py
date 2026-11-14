@@ -114,6 +114,12 @@ STRINGS = {
         "gui_btn_revisar": "Revisar carpeta",
         "gui_err_config_incompleta": "Falta configurar el api_id, el api_hash o el canal. Hazlo en la pantalla de Configuración.",
         "gui_err_sin_carpeta": "Elige primero una carpeta.",
+        "gui_btn_subir": "Subir",
+        "gui_confirm_borrar_title": "¿Borrar los archivos originales?",
+        "gui_confirm_borrar_body": "Cada archivo se eliminará de tu equipo después de subirse con éxito. Esta acción no se puede deshacer. Si tienes dudas, cancela y prueba antes con la simulación.",
+        "gui_btn_cancelar": "Cancelar",
+        "gui_btn_confirmar_borrar": "Sí, borrar",
+        "gui_label_eventos": "Eventos"
     },
     "en": {
         "banner_subtitle": "Upload large videos and files to your private channel, using your own account.",
@@ -224,6 +230,12 @@ STRINGS = {
         "gui_btn_revisar": "Review folder",
         "gui_err_config_incompleta": "The api_id, api_hash or channel is missing. Set it on the Settings screen.",
         "gui_err_sin_carpeta": "Choose a folder first.",
+        "gui_btn_subir": "Upload",
+        "gui_confirm_borrar_title": "Delete the original files?",
+        "gui_confirm_borrar_body": "Each file will be deleted from your computer after it uploads successfully. This cannot be undone. If in doubt, cancel and try a dry run first.",
+        "gui_btn_cancelar": "Cancel",
+        "gui_btn_confirmar_borrar": "Yes, delete",
+        "gui_label_eventos": "Events"
     },
 }
 
