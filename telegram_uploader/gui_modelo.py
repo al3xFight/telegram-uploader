@@ -4,9 +4,11 @@ No importa Flet: así se prueba con pytest y en la integración continua.
 Solo `gui.py` dibuja la ventana.
 """
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Callable
 
 from .progreso import ReporteProgreso
+from .servicio import CallbacksLogin
 
 
 @dataclass
@@ -65,3 +67,21 @@ class ReporteEstado(ReporteProgreso):
     def avanzar_total(self):
         self.estado.completados += 1
         self._avisar()
+
+class PuenteLogin:
+    """Conecta los datos que pide Telethon al iniciar sesión con los diálogos de la pantalla.
+
+    `pedir` es una función asíncrona que recibe la clave del dato ("telefono", "codigo"
+    o "contrasena") y devuelve lo que escribió la persona. El puente no guarda ni
+    registra esos valores: solo los entrega a Telethon (riesgo R11).
+    """
+
+    def __init__(self, pedir: Callable):
+        self._pedir = pedir
+
+    def callbacks(self) -> CallbacksLogin:
+        return CallbacksLogin(
+            telefono=partial(self._pedir, "telefono"),
+            codigo=partial(self._pedir, "codigo"),
+            contrasena=partial(self._pedir, "contrasena"),
+        )
