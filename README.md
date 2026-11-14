@@ -17,7 +17,7 @@ repetitivo. Este programa lo hace por ti:
 - Sube **toda una carpeta** de una vez, en orden cronológico.
 - **No repite** lo que ya subiste: recuerda los archivos enviados entre ejecuciones.
 - Respeta los **límites de Telegram**: espera entre subidas y reintenta solo si hay un error.
-- Funciona desde la terminal; no hay que editar archivos a mano.
+- - Funciona desde la terminal o con una **ventana de escritorio** (opcional); no hay que editar archivos a mano.
 - Si se corta la conexión a mitad de un archivo grande, **retoma desde donde quedó** en lugar de empezar de nuevo (dentro de la misma ejecución).
 
 ## Antes de empezar
@@ -83,6 +83,22 @@ python subir_a_telegram.py --carpeta "D:/Respaldo" --todo --borrar-local
 python subir_a_telegram.py --config
 ```
 
+## Interfaz gráfica (opcional)
+
+Si prefieres una ventana en lugar de la terminal:
+
+```bash
+pip install -r requirements-gui.txt
+python -m telegram_uploader.gui
+```
+
+La ventana tiene dos pantallas:
+
+- **Configuración:** tu `api_id`, tu `api_hash` (oculto), el canal de destino, los ajustes de velocidad y el idioma.
+- **Subir archivos:** eliges la carpeta, marcas las opciones (incluida la simulación) y ves el progreso de cada archivo, el avance total y los mensajes del programa.
+
+La primera vez que subes, la ventana te pide tu teléfono, el código que Telegram te envía y, si la tienes, la contraseña de verificación en dos pasos. Esos datos no se guardan. Si marcas "Borrar cada archivo original…", te pide confirmación antes de empezar. Usa la misma configuración y el mismo registro de subidos que la terminal.
+
 ## Opciones
 
 | Opción | Qué hace |
@@ -120,11 +136,11 @@ prioridad sobre el archivo de configuración.
 | Sin miniaturas ni orden por metadata | Instala `ffmpeg` y verifica que esté en el `PATH` |
 | Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
 | Se cortó la conexión a mitad de un archivo | El programa reintenta solo y retoma desde el último fragmento subido; verás el aviso `Reanudando…` |
+| `No module named 'flet'` al abrir la ventana | Instala la parte gráfica: `pip install -r requirements-gui.txt` |
 
 ## Qué no hace
 
 - No descarga archivos desde Telegram.
-- No tiene interfaz gráfica.
 - Sube a un solo destino por ejecución.
 - No usa bots: siempre opera con tu cuenta.
 - No retoma una subida si cierras el programa: al volver a ejecutarlo, el archivo se sube desde cero.

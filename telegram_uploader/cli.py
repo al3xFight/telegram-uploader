@@ -29,10 +29,7 @@ from .constantes import VERSION
 from .errores import ErrorDeUso
 from .i18n import elegir_idioma_interactivo, t, traductor
 from .medios import FFMPEG_DISPONIBLE
-from .servicio import Solicitud, ejecutar_servicio
-from .subida import (
-    OpcionesSubida,
-)
+from .servicio import Solicitud, ejecutar_servicio, resolver_ajustes, validar_carpeta
 
 
 def construir_parser() -> argparse.ArgumentParser:
@@ -78,36 +75,6 @@ def mostrar_banner() -> None:
         border_style="blue",
     ))
 
-
-def resolver_ajustes(args, config: dict):
-    """Combina configuración guardada y argumentos; lanza ErrorDeUso si algo es inválido.
-
-    Devuelve (api_id, api_hash, canal, opciones).
-    """
-    try:
-        api_id = int(config["api_id"])
-    except (TypeError, ValueError):
-        raise ErrorDeUso("err_api_id_invalid_saved") from None
-
-    chunks_paralelos = args.chunks_paralelos if args.chunks_paralelos is not None else int(config["chunks_paralelos"])
-    pausa_min = args.pausa_min if args.pausa_min is not None else float(config["pausa_min"])
-    pausa_max = args.pausa_max if args.pausa_max is not None else float(config["pausa_max"])
-
-    if chunks_paralelos < 1:
-        raise ErrorDeUso("err_chunks_min1")
-    if pausa_min < 0 or pausa_max < 0:
-        raise ErrorDeUso("err_pausas_negative")
-    if pausa_max > 0 and pausa_min > pausa_max:
-        pausa_min, pausa_max = pausa_max, pausa_min
-
-    opciones = OpcionesSubida(
-        borrar_local=args.borrar_local, dry_run=args.dry_run,
-        pausa_min=pausa_min, pausa_max=pausa_max, chunks_paralelos=chunks_paralelos,
-        archivos_simultaneos=args.paralelo,
-    )
-    return api_id, str(config["api_hash"]), config["canal"], opciones
-
-
 def mostrar_avisos(args) -> None:
     """Avisos no bloqueantes sobre el entorno y las opciones elegidas."""
     if args.paralelo > 1:
@@ -120,15 +87,6 @@ def mostrar_avisos(args) -> None:
 
     if not FFMPEG_DISPONIBLE:
         log.warning(t("warn_ffmpeg_missing"))
-
-
-def validar_carpeta(ruta) -> Path:
-    """Comprueba que la carpeta exista; lanza ErrorDeUso si no."""
-    carpeta = Path(ruta).expanduser()
-    if not carpeta.is_dir():
-        raise ErrorDeUso("err_carpeta_not_found", carpeta=carpeta)
-    return carpeta
-
 
 def obtener_carpeta(ruta_indicada) -> Path:
     """Pide la carpeta por consola si no se indicó, y comprueba que exista."""

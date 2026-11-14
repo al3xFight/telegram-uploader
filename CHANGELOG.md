@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.4.0] - 2026-11-14
+
+### Añadido
+- Interfaz gráfica de escritorio opcional, con Flet: `python -m telegram_uploader.gui`. Pantalla de configuración (validada, con el `api_hash` oculto), pantalla de subida (carpeta, opciones, simulación, progreso por archivo y total, y lista de eventos) e inicio de sesión de Telegram con diálogos de teléfono, código y contraseña de dos pasos.
+- Confirmación explícita antes de subir con la opción de borrar los archivos originales.
+- `requirements-gui.txt` con Flet fijado en 1.1.2 (Apache-2.0). La línea de comandos no lo necesita.
+- Módulos `gui.py` (solo dibujo, con Flet) y `gui_modelo.py` (lógica sin pantalla). Una prueba comprueba que solo `gui.py` importa Flet y que el resto funciona sin él.
+- 30 pruebas nuevas (93 en total).
+
+### Cambiado
+- `validar_carpeta` y `resolver_ajustes` pasan de `cli.py` a `servicio.py` para compartirlas entre las dos interfaces, sin cambio de comportamiento.
+
 ## [1.3.2] - 2026-11-13
 
 ### Cambiado
