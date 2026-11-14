@@ -2,6 +2,12 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.3.2] - 2026-11-13
+
+### Cambiado
+- `rich` sube de 12.6.0 a 15.0.0, porque `flet-desktop` (necesario para la futura interfaz gráfica) exige `rich>=13`. La consola se ve igual y las 63 pruebas pasan.
+- Cambian las dependencias transitivas de `rich`: `commonmark` se reemplaza por `markdown-it-py` y `mdurl`. Licencias verificadas con `pip-licenses`.
+
 ## [1.3.1] - 2026-11-13
 
 ### Añadido
