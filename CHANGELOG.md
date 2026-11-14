@@ -2,15 +2,22 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.3.2] - 2026-11-13
+
+### Cambiado
+- `rich` sube de 12.6.0 a 15.0.0, porque `flet-desktop` (necesario para la futura interfaz gráfica) exige `rich>=13`. La consola se ve igual y las 63 pruebas pasan.
+- Cambian las dependencias transitivas de `rich`: `commonmark` se reemplaza por `markdown-it-py` y `mdurl`. Licencias verificadas con `pip-licenses`.
+
 ## [1.3.1] - 2026-11-13
 
 ### Añadido
-- Opción `--limite N`: permite subir como máximo N archivos pendientes en una ejecución.
-- Validación de que `--limite` sea al menos 1, lanzando un `ErrorDeUso` controlado.
-- Mensajes informativos y de error adaptados en español e inglés para el límite de archivos.
+- `ErrorDeUso` (`errores.py`): la lógica lanza excepciones con la clave del texto en lugar de usar `sys.exit`.
+- `ReporteProgreso` (`progreso.py`): interfaz con la que la lógica informa el avance de las subidas.
+- `servicio.py`: flujo completo de subida (`Solicitud`, `CallbacksLogin`, `ResultadoSubida`), que acepta funciones propias para el inicio de sesión de Telegram.
+- 12 pruebas nuevas (63 en total).
 
 ### Cambiado
-- Refactorización de la arquitectura de CLI y servicios: la lógica principal de búsqueda y ejecución de subidas se delegó al módulo `servicio`.
+- Separación de la lógica y la consola, sin cambio visible para quien usa la línea de comandos: `subida.py` ya no usa `rich` y `cli.py` pasa a ser un cliente del servicio. Es el requisito previo de la interfaz gráfica (#9).
 
 ## [1.3.0] - 2026-11-12
 

@@ -80,6 +80,7 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 | R12 | Un antivirus marca el `.exe` como sospechoso | 2 | 2 | 4 | Mitigar | Publicar el hash SHA-256 y la forma de ejecutar desde el código fuente | Reportes de usuarios |
 | R13 | La GUI crece sin control | 2 | 2 | 4 | Mitigar | Versión base mínima; todo lo demás pasa por solicitud de cambio | Aparecen pedidos fuera de la versión base |
 | #20 | Separar la lógica de la consola (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
+| #22 | Subir rich a 15.0.0 (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
 
 **Priorización:** atender primero R1, R3, R6 y R10 (exposición 6).
 **Revisión:** se revisa este registro al cerrar cada versión nueva.
@@ -121,14 +122,14 @@ El proyecto no requiere infraestructura en la nube propia: la nube es de tercero
 | Herramienta | Versión | Uso | Licencia |
 |---|---|---|---|
 | Telethon | 1.45.0 | Cliente de la API de Telegram | MIT |
-| Rich | 12.6.0 | Interfaz de consola | MIT |
+| Rich | 15.0.0 | Interfaz de consola | MIT |
 | cryptg | 0.6.0 (Python 3.11 o superior) | Acelera el cifrado de las transferencias | CC0 (dominio público) |
 | pytest | 9.2.0 | Pruebas automatizadas | MIT |
 | ruff | 0.17.4 | Análisis estático | MIT |
 
 La instalación en Python 3.10 usa una versión anterior de `cryptg`, cuya licencia no se verificó.
 
-**Dependencias transitivas:** pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), commonmark (BSD), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT).
+**Dependencias transitivas:** pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), markdown-it-py (MIT), mdurl (MIT), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT).
 
 Todas las licencias son permisivas o de dominio público; ninguna es de copyleft, por lo que no imponen condiciones a la licencia del proyecto.
 
@@ -184,6 +185,7 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Hecho | 1.2.1 | Deuda técnica sin cambio de comportamiento: operaciones de archivo en hilos, `subir_archivo` dividida, `menu_configuracion` con tabla de opciones y `ruff` bloqueante en la integración continua | Completada |
 | Hecho | 1.3.0 | Reanudar subidas por fragmentos dentro de la misma ejecución | Completada |
 | Hecho | 1.3.1 | Separación de la lógica y la consola: servicio con progreso y login por funciones, sin cambio visible | Completada |
+| Hecho | 1.3.2 | Actualización de `rich` a 15.0.0, requisito de la interfaz gráfica | Completada |
 | Siguiente | 1.4.0 | Interfaz gráfica de escritorio con Flet (#9) | Planificada |
 | Después | 1.5.0 | Opción `--limite N` | Planificada |
 | Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
