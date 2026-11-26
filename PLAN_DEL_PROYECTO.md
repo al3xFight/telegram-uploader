@@ -184,8 +184,9 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Hecho | 1.3.1 | Separación de la lógica y la consola: servicio con progreso y login por funciones, sin cambio visible | Completada |
 | Hecho | 1.3.2 | Actualización de `rich` a 15.0.0, requisito de la interfaz gráfica | Completada |
 | Hecho | 1.4.0 | Interfaz gráfica de escritorio con Flet (configuración, inicio de sesión, subida con progreso) | Completada |
-| Siguiente | 1.4.1 | Ejecutable de Windows de la interfaz gráfica, con hash SHA-256 y avisos de licencia | Planificada |
+| Hecho | 1.4.1 | Ejecutable de Windows de la interfaz gráfica (`flet pack`), con hash SHA-256 y avisos de licencia | Completada |
 | Después | 1.5.0 | Opción `--limite N` | Planificada |
+| Después | A definir | Inicio de sesión por QR en la interfaz gráfica, como alternativa al código de verificación | Pospuesta |
 | Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
 ## 11. Plan de iteraciones
@@ -198,10 +199,9 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 | 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Eliminados los hallazgos de complejidad | Completado |
 | 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos | Completado |
 | 4 | Reanudar subidas por fragmentos (misma ejecución) | Versión 1.3.0 | Completado |
-| 5 | Opción `--limite N` | Versión 1.4.0 | Planificado |
-| 5 | Separar la lógica de la consola (#20) | Versión 1.3.1 | Completado |
-| 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | En curso |
-| 7 | Ejecutable de Windows de la interfaz gráfica | Versión 1.4.1 | Planificado |
+| 5 | Separar la lógica de la consola (#20) | Versiones 1.3.1 y 1.3.2 | Completado |
+| 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | Completado |
+| 7 | Ejecutable de Windows de la interfaz gráfica (#25) | Versión 1.4.1 | Completado |
 | 8 | Opción `--limite N` | Versión 1.5.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.
