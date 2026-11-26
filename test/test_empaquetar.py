@@ -30,3 +30,7 @@ def test_version_soportada_solo_acepta_la_verificada():
     assert empaquetar.version_soportada("1.1.2") is True
     assert empaquetar.version_soportada("1.1.3") is False
     assert empaquetar.version_soportada("1.0.9") is False
+
+def test_el_comando_excluye_chardet_por_su_licencia():
+    comando = empaquetar.construir_comando("flet")
+    assert "--pyinstaller-build-args=--exclude-module=chardet" in comando
