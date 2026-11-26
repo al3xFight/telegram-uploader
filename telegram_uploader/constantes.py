@@ -1,4 +1,5 @@
 """Constantes y valores por defecto. No depende de ningún otro módulo del paquete."""
+import sys
 from pathlib import Path
 
 VERSION = "1.4.0"
@@ -8,7 +9,21 @@ VERSION = "1.4.0"
 DIRECTORIO_BASE = Path(__file__).resolve().parent.parent
 CONFIG_PATH = DIRECTORIO_BASE / "config.json"
 SESSION_NAME = str(DIRECTORIO_BASE / "sesion_telegram")
-REGISTRO_SUBIDOS = str(DIRECTORIO_BASE / "subidos.json")
+REGISTRO_SUBIDOS = str
+
+def calcular_directorio_base() -> Path:
+    """Carpeta donde viven los datos del usuario (config, sesión y registro).
+
+    En desarrollo es la carpeta del proyecto. Cuando el programa está empaquetado
+    como ejecutable es la carpeta del .exe, para que los datos queden junto a él
+    y no en una carpeta temporal.
+    """
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+DIRECTORIO_BASE = calcular_directorio_base()
 
 EXTENSIONES_VIDEO = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".3gp"}
 MAX_REINTENTOS_ERROR = 3
