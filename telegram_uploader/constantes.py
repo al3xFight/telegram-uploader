@@ -6,10 +6,7 @@ VERSION = "1.4.0"
 
 # Carpeta del proyecto (la que contiene subir_a_telegram.py), no la del paquete.
 # Ahí se guardan config.json, la sesión de Telegram y el registro de subidos.
-DIRECTORIO_BASE = Path(__file__).resolve().parent.parent
-CONFIG_PATH = DIRECTORIO_BASE / "config.json"
-SESSION_NAME = str(DIRECTORIO_BASE / "sesion_telegram")
-REGISTRO_SUBIDOS = str
+
 
 def calcular_directorio_base() -> Path:
     """Carpeta donde viven los datos del usuario (config, sesión y registro).
@@ -23,7 +20,12 @@ def calcular_directorio_base() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+# Carpeta del proyecto (la que contiene subir_a_telegram.py), no la del paquete.
+# Ahí se guardan config.json, la sesión de Telegram y el registro de subidos.
 DIRECTORIO_BASE = calcular_directorio_base()
+CONFIG_PATH = DIRECTORIO_BASE / "config.json"
+SESSION_NAME = str(DIRECTORIO_BASE / "sesion_telegram")
+REGISTRO_SUBIDOS = str(DIRECTORIO_BASE / "subidos.json")
 
 EXTENSIONES_VIDEO = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".3gp"}
 MAX_REINTENTOS_ERROR = 3
