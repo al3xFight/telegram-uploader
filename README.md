@@ -168,7 +168,7 @@ El resultado queda en `dist\TelegramUploader\` y el programa muestra el hash SHA
 
 ## Archivos que crea
 
-Se guardan junto a `subir_a_telegram.py`:
+Se guardan junto a `subir_a_telegram.py` (o junto a `TelegramUploader.exe`, si usas el ejecutable):
 
 | Archivo | Contenido |
 |---|---|

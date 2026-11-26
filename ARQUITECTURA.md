@@ -15,7 +15,9 @@ ya subido y funciona en español e inglés.
 | Archivo | Responsabilidad (una sola) |
 |---|---|
 | `subir_a_telegram.py` | Lanzador de 15 líneas. Solo llama a `cli.ejecutar()`. |
-| `telegram_uploader/constantes.py` | Valores fijos, rutas y `CONFIG_DEFAULTS`. No importa nada del paquete. |
+| `subir_a_telegram_gui.py` | Lanzador de la interfaz gráfica y punto de entrada del ejecutable. Solo llama a `telegram_uploader.gui.ejecutar()`. |
+| `herramientas/empaquetar.py` | Construye el ejecutable de Windows con `flet pack`: comprueba la versión de `flet-cli`, corrige un error conocido de esa versión, construye y calcula el SHA-256. Se ejecuta con `python -m herramientas.empaquetar` y necesita `requirements-build.txt`. |
+| `telegram_uploader/constantes.py` | Valores fijos, rutas y `CONFIG_DEFAULTS`. `calcular_directorio_base()` decide dónde viven `config.json`, la sesión y el registro: la carpeta del proyecto, o la del `.exe` si el programa está empaquetado. No importa nada del paquete. |
 | `telegram_uploader/consola.py` | `console` (rich) y `log`. No importa nada del paquete. |
 | `telegram_uploader/errores.py` | `ErrorDeUso`: excepción con la clave del texto, sus datos y claves de pistas de ayuda, que la lógica lanza en lugar de usar `sys.exit`; cada interfaz decide cómo mostrarla. No importa nada del paquete. |
 | `telegram_uploader/progreso.py` | `ReporteProgreso`: interfaz con la que la lógica informa el avance (total, inicio, avance y fin de cada archivo). No hace nada por defecto; la consola, la GUI o las pruebas la implementan. No importa nada del paquete. |
@@ -24,7 +26,7 @@ ya subido y funciona en español e inglés.
 | `telegram_uploader/registro.py` | `subidos.json` (evita duplicados) y `clave_archivo()`. |
 | `telegram_uploader/medios.py` | Buscar archivos, orden cronológico, ffprobe/ffmpeg, miniaturas. |
 | `telegram_uploader/subida.py` | Cliente de Telegram, subida por fragmentos con reanudación entre reintentos, reintentos, avance mediante ReporteProgreso, Incluye ReporteRich, la barra de progreso de la consola. |
-| `telegram_uploader/servicio.py` | Flujo completo de subida (`ejecutar_servicio`): busca pendientes, inicia sesión, sube y devuelve un `ResultadoSubida`. Recibe una `Solicitud`, un `ReporteProgreso` y, opcionalmente, `CallbacksLogin` (teléfono, código y contraseña de 2FA). Lo usan la línea de comandos y la futura interfaz gráfica. |
+| `telegram_uploader/servicio.py` | Flujo completo de subida (`ejecutar_servicio`): busca pendientes, inicia sesión, sube y devuelve un `ResultadoSubida`. Recibe una `Solicitud`, un `ReporteProgreso` y, opcionalmente, `CallbacksLogin` (teléfono, código y contraseña de 2FA). Lo usan la línea de comandos y la interfaz gráfica. |
 | `telegram_uploader/gui_modelo.py` | Lógica de la interfaz gráfica que no necesita pantalla: `ReporteEstado` (estado del progreso), `PuenteLogin` (entrega teléfono, código y 2FA a Telethon sin conservarlos), `validar_formulario`, `crear_solicitud` y `ManejadorEventos` (mensajes del registro). No importa Flet, por eso se prueba con pytest y en la integración continua. |
 | `telegram_uploader/gui.py` | Ventana de escritorio con Flet: pantallas de configuración y de subida, y diálogos de inicio de sesión. Solo dibuja; la lógica está en `gui_modelo.py`. Es el único módulo que importa Flet y necesita `requirements-gui.txt`. Se abre con `python -m telegram_uploader.gui`. |
 | `telegram_uploader/cli.py` | Argumentos, validación y preparación de la `Solicitud`; llama a `servicio.ejecutar_servicio`. Captura `ErrorDeUso` y lo convierte en mensaje y código de salida 1. Incluye `ReporteRich`, la barra de progreso de la consola. Es el único que conoce a todos. |
@@ -180,3 +182,6 @@ Luego: copia los cambios, ejecuta `pytest` y `ruff`, y revisa el resultado antes
 - Las subidas solo se reanudan dentro de la misma ejecución. Si se cierra el programa, el archivo se sube desde cero: Telegram conserva los fragmentos subidos solo entre varios minutos y varias horas, por lo que reanudar entre ejecuciones únicamente serviría si se retoma pronto.
 - La capa visual (`gui.py`) no se prueba automáticamente: se verifica a mano con una lista de comprobaciones. La lógica que está detrás sí tiene pruebas.
 - Telethon escribe por consola, no por la ventana, sus avisos de dato incorrecto durante el inicio de sesión; la ventana solo vuelve a pedir el dato.
+- El ejecutable de Windows no está firmado: SmartScreen o el antivirus pueden avisar al abrirlo. Solo se ha construido y probado en Windows con Python 3.13 y `flet pack` 1.1.2.
+- Telegram envía el código de inicio de sesión a las aplicaciones de terceros solo por la app, sin SMS; si no llega, el programa no ofrece otra vía todavía (el inicio por QR está pospuesto, Issue #29).
+- El repositorio de Telethon en GitHub está archivado desde el 21 de febrero de 2026 y se mudó a Codeberg.

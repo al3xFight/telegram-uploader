@@ -163,6 +163,18 @@ antes de confirmar la subida, nunca registrar un fallo como subido.
 **Nueva pantalla o control de la ventana**
 La lógica (validar, convertir, decidir) va en `gui_modelo.py` con su prueba primero. En `gui.py`, el único módulo que importa Flet, solo va el dibujo. Los textos `gui_*` van en español e inglés. La capa visual no tiene pruebas automáticas: se comprueba a mano abriendo la ventana.
 
+### Receta: construir el ejecutable de Windows
+
+```powershell
+python -m venv "$env:TEMP\venv-build"
+& "$env:TEMP\venv-build\Scripts\python.exe" -m pip install -r requirements-build.txt
+& "$env:TEMP\venv-build\Scripts\python.exe" -m herramientas.empaquetar
+```
+
+El resultado queda en `dist\TelegramUploader\` y el comando muestra el SHA-256 del `.exe`. Antes de publicarlo, ábrelo y comprueba que arranca sin Python, que guarda `config.json` junto al `.exe` y que sube un archivo de prueba. No publiques una carpeta `dist` donde hayas iniciado sesión, porque contiene tu sesión de Telegram: construye de nuevo desde cero.
+
+Si cambias cómo se calculan las rutas de datos, define las constantes derivadas (`CONFIG_PATH`, `SESSION_NAME`, `REGISTRO_SUBIDOS`) **después** de `DIRECTORIO_BASE`, y comprueba el caso empaquetado con la prueba que simula `sys.frozen`.
+
 ## 6. Cómo pedirle un cambio a una IA (sin que se salte nada)
 
 Pasos:
