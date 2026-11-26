@@ -1,0 +1,3 @@
+-r requirements-gui.txt
+flet-cli==1.1.2
+pyinstaller==6.22.3
