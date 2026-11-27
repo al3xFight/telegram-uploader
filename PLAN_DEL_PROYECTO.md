@@ -40,8 +40,14 @@ Interfaz gráfica de escritorio con Flet (versión base: configuración, inicio 
 | #10 | Subir a varios canales o grupos en una misma ejecucion | funcion | baja | Pospuesta |
 | #11 | Soporte para grupos con temas (por verificar que la API lo permita) | funcion | baja | Pospuesta |
 | #12 | Operacion desde varios equipos (definir el manejo de la sesion de Telegram) | funcion | baja | Pospuesta |
+| #17 | Reanudar subidas entre ejecuciones distintas | funcion | baja | Pospuesta |
+| #20 | Separar la lógica de la consola (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
+| #22 | Subir rich a 15.0.0 (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
+| #24 | El programa falla si se redirige su salida en Windows (UnicodeEncodeError) | bug | media | Pendiente |
+| #25 | Empaquetar la interfaz gráfica como ejecutable de Windows | funcion | alta | Cerrado |
+| #29 | Inicio de sesión por QR en la interfaz gráfica | funcion | media | Pospuesta |
 
-Los elementos #10 a #12 son ideas de evolución que quedan fuera del alcance actual (sección 2). Se crean sus Issues cuando se planteen con detalle, mediante el proceso de la sección 5.
+Los elementos #10, #11, #12 y #17 son ideas de evolución pospuestas, fuera del alcance actual (sección 2). Se retoman mediante el proceso de la sección 5.
 
 ### Solicitudes de cambio resueltas
 
@@ -49,6 +55,7 @@ Los elementos #10 a #12 son ideas de evolución que quedan fuera del alcance act
 |---|---|---|---|
 | #8 | Descargar los videos desde el canal | Rechazada | Fuera del alcance: la visión del producto es subir, no descargar |
 | #9 | Interfaz gráfica de escritorio | Aceptada con condiciones | Mejora la usabilidad; condiciones: separar antes la lógica de la consola y mantener la GUI como dependencia opcional |
+| #29 | Inicio de sesión por QR en la interfaz gráfica | Pospuesta | La versión 1.4.1 se limita al ejecutable; se evalúa al priorizar la 1.5.0 |
 
 ## 5. Gestión de solicitudes de cambio
 1. Se registra la petición como un elemento nuevo del backlog (qué, por qué).
@@ -76,10 +83,10 @@ Escala: probabilidad (P) e impacto (I) de 1 a 3. Exposición = P × I.
 | R11 | El inicio de sesión de la GUI expone el código o la contraseña de 2FA | 1 | 3 | 3 | Mitigar | Campos ocultos; PuenteLogin no guarda ni registra esos valores, con pruebas que lo comprueban | Aparecen en logs o archivos |
 | R12 | Un antivirus marca el `.exe` como sospechoso | 2 | 2 | 4 | Mitigar | Publicar el hash SHA-256 y la forma de ejecutar desde el código fuente | Reportes de usuarios |
 | R13 | La GUI crece sin control | 2 | 2 | 4 | Mitigar | Versión base mínima; todo lo demás pasa por solicitud de cambio | Aparecen pedidos fuera de la versión base |
-| #20 | Separar la lógica de la consola (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
-| #22 | Subir rich a 15.0.0 (requisito de la interfaz gráfica #9) | deuda | alta | Cerrado |
+| R14 | El repositorio de Telethon en GitHub está archivado (21 de febrero de 2026, mudado a Codeberg) y puede dejar de recibir correcciones | 2 | 2 | 4 | Mitigar | Versión fijada con `==`; pruebas con cliente simulado; seguir el repositorio nuevo y evaluar alternativas si Telegram cambia el protocolo | Fallos de conexión sin corrección publicada |
+| R15 | Telegram no entrega el código de inicio de sesión a aplicaciones de terceros | 3 | 2 | 6 | Mitigar | Documentado en el README; alternativa por QR registrada (#29) | El código no llega al iniciar sesión (ocurrió en la prueba del ejecutable) |
 
-**Priorización:** atender primero R1, R3, R6 y R10 (exposición 6).
+**Priorización:** atender primero R1, R3, R6, R10 y R15 (exposición 6).
 **Revisión:** se revisa este registro al cerrar cada versión nueva.
 
 ## 7. Método de trabajo
@@ -128,7 +135,9 @@ La instalación en Python 3.10 usa una versión anterior de `cryptg`, cuya licen
 
 **Dependencias transitivas** (medidas con `pip-licenses` en un entorno con `requirements-gui.txt`): pyaes (MIT), rsa (Apache), pyasn1 (BSD-2-Clause), Pygments (BSD-2-Clause), markdown-it-py (MIT), mdurl (MIT), anyio (MIT), certifi (MPL-2.0), h11 (MIT), httpcore (BSD-3-Clause), httpx (BSD), idna (BSD-3-Clause), msgpack (Apache-2.0), oauthlib (BSD-3-Clause), repath (MIT), six (MIT), typing_extensions (PSF-2.0), colorama (BSD), iniconfig (MIT), packaging (Apache-2.0 o BSD-2-Clause) y pluggy (MIT). Las que vienen solo con la interfaz gráfica son anyio, certifi, h11, httpcore, httpx, idna, msgpack, oauthlib, repath, six y typing_extensions.
 
-Todas las licencias son permisivas o de dominio público, salvo `certifi` (MPL-2.0), que solo se instala con la interfaz gráfica. La MPL-2.0 es un copyleft débil, a nivel de archivo: obliga a conservar su aviso y a ofrecer el código de esos archivos si se modifican, pero no impone condiciones a la licencia del resto del proyecto. Se usa sin modificar. Al distribuir un ejecutable se incluirán los avisos de licencia de Flet (Apache-2.0) y de `certifi`.
+Todas las licencias son permisivas o de dominio público, salvo `certifi` (MPL-2.0), que solo se instala con la interfaz gráfica. La MPL-2.0 es un copyleft débil, a nivel de archivo: obliga a conservar su aviso y a ofrecer el código de esos archivos si se modifican, pero no impone condiciones a la licencia del resto del proyecto. Se usa sin modificar. Los avisos de licencia de los componentes que viajan dentro del ejecutable están en `THIRD_PARTY_NOTICES.txt`, que se distribuye junto a él.
+
+**Herramientas de construcción** (solo en `requirements-build.txt`, no forman parte del programa): `flet-cli` y `flet` (Apache-2.0), PyInstaller 6.22.3 (GPL-2.0, con una excepción que permite distribuir los ejecutables generados con la licencia que se quiera, siempre que se respeten las de las dependencias) y `pyinstaller-hooks-contrib` (Apache-2.0 y GPL-2.0). `pillow` (MIT-CMU) y `click` (BSD-3-Clause) sí viajan dentro del ejecutable, junto con `flet_desktop`. `chardet` (LGPL) lo exige `binaryornot` en el entorno de construcción y entraba en el ejecutable, así que se excluye con `--exclude-module=chardet` al empaquetar; se comprobó en el índice de módulos de PyInstaller. `cookiecutter` y `resvg_py` (sin licencia declarada en sus metadatos) no entran en el ejecutable.
 
 **Servicios:**
 
@@ -184,8 +193,9 @@ El roadmap ordena las entregas esperadas sin fijar fechas. Las versiones siguen 
 | Hecho | 1.3.1 | Separación de la lógica y la consola: servicio con progreso y login por funciones, sin cambio visible | Completada |
 | Hecho | 1.3.2 | Actualización de `rich` a 15.0.0, requisito de la interfaz gráfica | Completada |
 | Hecho | 1.4.0 | Interfaz gráfica de escritorio con Flet (configuración, inicio de sesión, subida con progreso) | Completada |
-| Siguiente | 1.4.1 | Ejecutable de Windows de la interfaz gráfica, con hash SHA-256 y avisos de licencia | Planificada |
+| Hecho | 1.4.1 | Ejecutable de Windows de la interfaz gráfica (`flet pack`), con hash SHA-256 y avisos de licencia | Completada |
 | Después | 1.5.0 | Opción `--limite N` | Planificada |
+| Después | A definir | Inicio de sesión por QR en la interfaz gráfica, como alternativa al código de verificación | Pospuesta |
 | Después | A definir | Reanudar subidas entre ejecuciones y otras ideas del backlog marcadas como pospuestas, sujetas al proceso de gestión de cambios | Pospuesta |
 
 ## 11. Plan de iteraciones
@@ -198,10 +208,9 @@ El método es Kanban, que fluye de forma continua y no usa sprints de contenido 
 | 2 | Dividir `subir_archivo` y simplificar `menu_configuracion` | Eliminados los hallazgos de complejidad | Completado |
 | 3 | `ruff` bloqueante en la integración continua | Cero hallazgos y CI que falla ante nuevos | Completado |
 | 4 | Reanudar subidas por fragmentos (misma ejecución) | Versión 1.3.0 | Completado |
-| 5 | Opción `--limite N` | Versión 1.4.0 | Planificado |
-| 5 | Separar la lógica de la consola (#20) | Versión 1.3.1 | Completado |
-| 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | En curso |
-| 7 | Ejecutable de Windows de la interfaz gráfica | Versión 1.4.1 | Planificado |
+| 5 | Separar la lógica de la consola (#20) | Versiones 1.3.1 y 1.3.2 | Completado |
+| 6 | Interfaz gráfica de escritorio (#9) | Versión 1.4.0 | Completado |
+| 7 | Ejecutable de Windows de la interfaz gráfica (#25) | Versión 1.4.1 | Completado |
 | 8 | Opción `--limite N` | Versión 1.5.0 | Planificado |
 
 Las estimaciones son iniciales y se ajustan con la experiencia de cada ciclo. Una solicitud de cambio aceptada entra al backlog y se ubica según su prioridad, sin alterar el ciclo en curso.

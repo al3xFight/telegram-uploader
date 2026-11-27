@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 
 # Carpeta del proyecto (la que contiene subir_a_telegram.py), no la del paquete.
 # Ahí se guardan config.json, la sesión de Telegram y el registro de subidos.

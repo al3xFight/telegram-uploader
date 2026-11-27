@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
+## [1.4.1] - 2026-11-26
+
+### Añadido
+- Ejecutable de Windows de la interfaz gráfica, construido con `flet pack` (PyInstaller): `python -m herramientas.empaquetar` genera `dist\TelegramUploader\TelegramUploader.exe` y muestra su hash SHA-256.
+- `herramientas/empaquetar.py`: comprueba que `flet-cli` sea la versión verificada (1.1.2), corrige un error de esa versión en Windows (abre un archivo en modo binario indicando una codificación), construye el ejecutable y calcula el hash.
+- `subir_a_telegram_gui.py`: lanzador de la interfaz gráfica, que además es el punto de entrada del ejecutable.
+- `requirements-build.txt` con `flet-cli` 1.1.2 y PyInstaller 6.22.3 fijados.
+- `calcular_directorio_base()` en `constantes.py`.
+- 8 pruebas nuevas (101 en total).
+
+### Cambiado
+- Cuando el programa está empaquetado, `config.json`, la sesión de Telegram y `subidos.json` se guardan junto al `.exe`. En desarrollo no cambia nada: siguen en la carpeta del proyecto.
+
 ## [1.4.0] - 2026-11-14
 
 ### Añadido

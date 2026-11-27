@@ -90,8 +90,10 @@ def construir_comando(flet: str) -> list[str]:
         "-n",
         NOMBRE_EJECUTABLE,
         "-D",
+        "-y",
         "--product-version",
         VERSION,
+        "--pyinstaller-build-args=--exclude-module=chardet",
     ]
 
 

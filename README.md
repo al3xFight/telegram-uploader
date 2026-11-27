@@ -118,6 +118,26 @@ La primera vez que subes, la ventana te pide tu teléfono, el código que Telegr
 También puedes definir `TG_API_ID`, `TG_API_HASH` y `TG_CANAL` como **variables de entorno**; tienen
 prioridad sobre el archivo de configuración.
 
+## Ejecutable de Windows (opcional)
+
+Si no quieres instalar Python, puedes usar el ejecutable de la interfaz gráfica: descarga el archivo comprimido de la última versión en la página *Releases* del repositorio, descomprímelo y abre `TelegramUploader.exe`. La configuración (`config.json`), la sesión de Telegram y el registro (`subidos.json`) se guardan **junto al `.exe`**, así que mueve o copia la carpeta completa si cambias de lugar.
+
+Windows (SmartScreen o el antivirus) puede avisar al abrirlo, porque el ejecutable no está firmado. Para comprobar que el archivo descargado es el publicado, compara su hash con el que aparece en la página de la versión:
+
+```powershell
+Get-FileHash .\TelegramUploader.exe -Algorithm SHA256
+```
+
+Para construirlo tú mismo, desde la carpeta del proyecto y en un entorno limpio:
+
+```powershell
+python -m venv venv-build
+.\venv-build\Scripts\python.exe -m pip install -r requirements-build.txt
+.\venv-build\Scripts\python.exe -m herramientas.empaquetar
+```
+
+El resultado queda en `dist\TelegramUploader\` y el programa muestra el hash SHA-256 al terminar. No compartas esa carpeta si ya iniciaste sesión desde ella, porque contendría tu sesión de Telegram.
+
 ## ⚠️ Seguridad
 
 - `config.json` guarda tu `api_hash` en **texto plano** y `sesion_telegram.session` equivale a tener tu
@@ -137,6 +157,7 @@ prioridad sobre el archivo de configuración.
 | Subidas lentas | Verifica que `cryptg` esté instalado (`pip show cryptg`) y sube `--chunks-paralelos` |
 | Se cortó la conexión a mitad de un archivo | El programa reintenta solo y retoma desde el último fragmento subido; verás el aviso `Reanudando…` |
 | `No module named 'flet'` al abrir la ventana | Instala la parte gráfica: `pip install -r requirements-gui.txt` |
+| El código de verificación de Telegram no llega | Telegram lo envía solo por la app, en el chat oficial «Telegram» (revisa también los chats archivados), no por SMS. Si no llega, espera unas horas sin pedir más códigos, porque Telegram limita los intentos |
 
 ## Qué no hace
 
@@ -147,7 +168,7 @@ prioridad sobre el archivo de configuración.
 
 ## Archivos que crea
 
-Se guardan junto a `subir_a_telegram.py`:
+Se guardan junto a `subir_a_telegram.py` (o junto a `TelegramUploader.exe`, si usas el ejecutable):
 
 | Archivo | Contenido |
 |---|---|
